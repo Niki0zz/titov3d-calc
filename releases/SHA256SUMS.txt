@@ -1,0 +1,4 @@
+﻿223a31ed819d34dcb83108f4111da5b395ee2704822439df4ee44732d3f98408  TitoV3D-Calc-6.0.0-android.apk
+3d39d7faabe8f6f985b3e50792867c38ed1b493291adbfeb23db7caa8bb7fd6b  TitoV3D-Calc-6.0.0-portable.exe
+701608ab47123ad7ba39a8dd2dcbfde939782755d4acdf7fb45c1a716bf68a68  TitoV3D-Calc-6.0.0-x64.msi
+ec89df8a431387ee1b0df5e687423f5edae11c81880619a8ab9558a55ac706c1  TitoV3D-Calc-6.0.0-x64-setup.exe
