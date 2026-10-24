@@ -1,0 +1,11 @@
+{
+  "appId": "com.tito.v3dcalc",
+  "appName": "TitoV3D Calc",
+  "webDir": "www",
+  "backgroundColor": "#0b0d10",
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  }
+}

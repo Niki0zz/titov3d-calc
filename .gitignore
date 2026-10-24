@@ -1,0 +1,29 @@
+# dependencies
+node_modules/
+package-lock.json.bak
+
+# rust / tauri
+target/
+src-tauri/gen/
+
+# android / gradle
+.gradle/
+.kotlin/
+build/
+local.properties
+*.iml
+.idea/
+
+# secrets
+*.jks
+*.keystore
+*.p12
+keystore.properties
+.env
+
+# os / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+*.log

@@ -1,0 +1,2199 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0d10">
+<title>TitoV3D Calc</title>
+<style>
+  *{box-sizing:border-box}
+  :root{
+    --bg:#0b0d10; --panel:#12151a; --panel2:#171b22; --panel3:#1e242d;
+    --line:#252b34; --txt:#e7ebf0; --muted:#8d97a6; --muted2:#6b7482;
+    --accent:#2e86c1; --accent2:#38bdf8; --ok:#34d399; --warn:#fbbf24; --danger:#f87171;
+    --radius:14px;
+  }
+  html,body{margin:0;padding:0}
+  body{
+    background:
+      radial-gradient(900px 480px at 90% -10%, #10283a 0%, transparent 60%),
+      radial-gradient(700px 380px at 0% 0%, #16202c 0%, transparent 55%),
+      var(--bg);
+    color:var(--txt);
+    font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    -webkit-text-size-adjust:100%;
+    min-height:100vh;
+  }
+  .wrap{max-width:1120px;margin:0 auto;padding:16px 14px 40px}
+
+  .top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .logo{width:38px;height:38px;border-radius:11px;flex:0 0 auto;display:grid;place-items:center;
+    background:linear-gradient(150deg,#2e86c1,#0d4a72);box-shadow:0 8px 22px rgba(46,134,193,.28)}
+  .logo svg{width:21px;height:21px}
+  .brand h1{font-size:17px;margin:0;font-weight:650;letter-spacing:.2px}
+  .brand .v{color:var(--muted2);font-size:11px;letter-spacing:.4px}
+  .spacer{flex:1}
+  .iconbtn{width:38px;height:38px;border-radius:11px;border:1px solid var(--line);background:var(--panel2);
+    color:var(--txt);font-size:18px;line-height:1;cursor:pointer;display:grid;place-items:center}
+  .iconbtn:hover{background:var(--panel3)}
+
+  .tabs{display:flex;gap:6px;overflow-x:auto;padding:3px 0 10px;margin-bottom:8px;
+    scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{
+    flex:0 0 auto;padding:8px 14px;border-radius:999px;border:1px solid var(--line);
+    background:var(--panel);color:var(--muted);font:inherit;font-size:13.5px;cursor:pointer;
+    white-space:nowrap;transition:.15s;
+  }
+  .tab:hover{color:var(--txt);background:var(--panel2)}
+  .tab.active{background:linear-gradient(150deg,#2e86c1,#1b6ea1);border-color:#3b9ad4;color:#fff;font-weight:600}
+
+  .panel{display:none}
+  .panel.active{display:block;animation:fade .18s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+
+  .cols{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px;align-items:start}
+
+  .card{
+    background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,0)) , var(--panel);
+    border:1px solid var(--line);border-radius:var(--radius);padding:15px;margin-bottom:13px;
+  }
+  .card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+  .card h2{font-size:12.5px;letter-spacing:.7px;text-transform:uppercase;color:var(--muted);
+    margin:0 0 12px;font-weight:650;display:flex;align-items:center;gap:8px}
+  .card-head h2{margin:0}
+  .card h2::before{content:"";width:3px;height:12px;border-radius:2px;background:var(--accent2);opacity:.85}
+
+  .fields{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+  .field{min-width:0}
+  .field.full{grid-column:1/-1}
+  .field label,.flabel{display:block;font-size:12.5px;color:var(--muted);margin-bottom:5px;line-height:1.3}
+  .hint{font-size:11.5px;color:var(--muted2);margin-top:5px;line-height:1.35}
+  .ctl{display:flex;align-items:center;background:var(--panel2);border:1px solid var(--line);
+    border-radius:10px;overflow:hidden;transition:border-color .15s,background .15s}
+  .ctl:focus-within{border-color:var(--accent2);background:var(--panel3)}
+  .ctl.invalid{border-color:rgba(248,113,113,.7);background:rgba(248,113,113,.06)}
+  .ctl input,.ctl select{flex:1 1 auto;min-width:0;width:100%;background:transparent;border:0;outline:none;
+    color:var(--txt);font:inherit;font-size:16px;padding:10px 12px;appearance:none}
+  .ctl select{padding-right:30px;cursor:pointer;
+    background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+    background-position:calc(100% - 17px) 19px,calc(100% - 12px) 19px;
+    background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+  .ctl select option,.ctl select optgroup{background:#171b22;color:var(--txt)}
+  .ctl .u{flex:0 0 auto;color:var(--muted);font-size:12.5px;padding-right:11px;white-space:nowrap}
+  input[type=number]{-moz-appearance:textfield}
+  input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+
+  .trow{display:flex;align-items:center;gap:12px;padding:6px 0}
+  .trow .tlabel{flex:1 1 auto;font-size:13.5px;color:#c7ced8}
+  .tpair{display:flex;gap:6px;flex:0 0 auto}
+  .ctl.sm{width:88px}
+  .ctl.sm input{padding:8px 9px;font-size:15px;text-align:right}
+  .ctl.sm .u{padding-right:8px;font-size:12px}
+
+  button{font:inherit}
+  .btn{font-size:13.5px;padding:10px 15px;border-radius:10px;cursor:pointer;
+    background:var(--panel2);color:var(--txt);border:1px solid var(--line);transition:.15s}
+  .btn:hover{background:var(--panel3);border-color:#39424f}
+  .btn:active{transform:translateY(1px)}
+  .btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+  .btn.primary{background:linear-gradient(150deg,#2e86c1,#1a6ba0);border-color:#3b9ad4;color:#fff;font-weight:600}
+  .btn.primary:hover{filter:brightness(1.08)}
+  .btn.ok{background:linear-gradient(150deg,#10b981,#0d8f68);border-color:#10b981;color:#03251a;font-weight:600}
+  .btn.ghost{background:transparent}
+  .btn.danger{color:#ffb4b4;border-color:#4a2b2f;background:#241619}
+  .btn.danger:hover{background:#301a1e}
+  .btn.sm{padding:7px 11px;font-size:12.5px;border-radius:9px}
+  .btn.big{width:100%;padding:14px;font-size:16px;border-radius:12px}
+
+  .result{background:linear-gradient(160deg,#0f2d3f 0%,#121a22 55%,#12151a 100%);border-color:#255273}
+  .rlabel{font-size:11.5px;letter-spacing:.8px;text-transform:uppercase;color:#8cc6e6;margin-bottom:3px}
+  .rbig{font-size:36px;font-weight:700;letter-spacing:-.8px;line-height:1.1;font-variant-numeric:tabular-nums}
+  .rbig small{font-size:15px;font-weight:500;color:var(--muted);letter-spacing:0}
+  .rsub{color:var(--muted);font-size:12.5px;margin-top:5px}
+  .empty{color:var(--muted2);font-size:13.5px;padding:14px 0;text-align:center;line-height:1.6}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  td{padding:6px 0;border-bottom:1px dashed rgba(255,255,255,.055);vertical-align:top}
+  tr:last-child td{border-bottom:0}
+  td:last-child{text-align:right;white-space:nowrap;padding-left:10px;font-variant-numeric:tabular-nums}
+  tr.base td{border-top:1px solid rgba(56,189,248,.35);border-bottom:0;padding-top:9px;color:#a9d9f2;font-weight:600}
+  tr.sum td{border-top:1px solid rgba(255,255,255,.14);font-weight:600}
+  tr.price td{border-top:1px solid rgba(56,189,248,.5);color:#8ee7d8;font-weight:700;font-size:14.5px;padding-top:9px}
+  .total{display:flex;justify-content:space-between;gap:10px;padding:10px 0 0;margin-top:6px;
+    border-top:1px solid var(--line);font-size:15px;font-weight:700}
+  .total b{color:var(--accent2);font-variant-numeric:tabular-nums}
+
+  .list{display:flex;flex-direction:column;gap:8px}
+  .group-title{font-size:11.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted2);
+    margin:10px 2px 0;display:flex;align-items:center;gap:7px;font-weight:600}
+  .group-title:first-child{margin-top:0}
+  .group-title span{font-size:10.5px;background:var(--panel3);border:1px solid var(--line);
+    border-radius:999px;padding:0 7px;color:var(--muted);font-weight:500}
+  .item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);
+    border-radius:11px;background:var(--panel2)}
+  .item-main{flex:1;min-width:0}
+  .item-title{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .item-meta{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.4;overflow-wrap:anywhere}
+  .badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;
+    background:rgba(52,211,153,.13);color:#6ee7b7;border:1px solid rgba(52,211,153,.28);white-space:nowrap}
+  .badge.low{background:rgba(251,191,36,.13);color:#fcd34d;border-color:rgba(251,191,36,.3)}
+  .badge.neg{background:rgba(248,113,113,.13);color:#fca5a5;border-color:rgba(248,113,113,.32)}
+  .badge.info{background:rgba(56,189,248,.12);color:#7dd3fc;border-color:rgba(56,189,248,.28)}
+  .item-actions{display:flex;gap:6px;flex:0 0 auto}
+  .mini{width:32px;height:32px;border-radius:9px;border:1px solid var(--line);background:var(--panel3);
+    color:var(--muted);cursor:pointer;display:grid;place-items:center;font-size:14px;padding:0}
+  .mini:hover{color:var(--txt);border-color:#3d4753}
+  .mini.del:hover{color:#fca5a5;border-color:#5b3237;background:#241619}
+
+  .form{border:1px dashed #33404f;border-radius:12px;padding:13px;margin-bottom:12px;background:rgba(56,189,248,.03)}
+  .form.hidden{display:none}
+  .form .frow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+  .form .fbuttons{display:flex;gap:8px;flex-wrap:wrap}
+
+  .section-title{font-size:16px;font-weight:650;margin:0 0 4px}
+  .section-sub{color:var(--muted);font-size:12.5px;margin:0 0 14px}
+
+  .menu{position:absolute;right:14px;top:60px;z-index:60;background:#141920;border:1px solid var(--line);
+    border-radius:12px;padding:6px;min-width:248px;box-shadow:0 18px 44px rgba(0,0,0,.55);display:none}
+  .menu.open{display:block}
+  .menu button{display:block;width:100%;text-align:left;padding:9px 11px;border:0;background:transparent;
+    color:var(--txt);font-size:13.5px;border-radius:8px;cursor:pointer}
+  .menu button:hover{background:var(--panel3)}
+  .menu .sep{height:1px;background:var(--line);margin:5px 0}
+  .menu .danger-t{color:#fca5a5}
+
+  .toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,20px);opacity:0;pointer-events:none;
+    background:#10243a;border:1px solid #2c5a80;color:#d6ecff;padding:10px 16px;border-radius:11px;
+    font-size:13.5px;z-index:200;transition:.22s;max-width:90vw;text-align:center;box-shadow:0 12px 30px rgba(0,0,0,.5)}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:300;display:none;
+    align-items:center;justify-content:center;padding:16px}
+  .modal.open{display:flex}
+  .modal-box{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:16px;width:min(720px,100%);max-height:86vh;display:flex;flex-direction:column;gap:10px}
+  .modal-title{font-size:13.5px;font-weight:600;color:#cfe6f5}
+  .modal textarea{flex:1 1 auto;min-height:220px;background:var(--panel2);border:1px solid var(--line);
+    border-radius:10px;color:var(--txt);font:12.5px/1.5 ui-monospace,Consolas,monospace;padding:10px;resize:vertical}
+  .modal-actions{display:flex;gap:8px;justify-content:flex-end}
+
+  .warnbox{margin:12px 0 0;border:1px solid rgba(251,191,36,.3);background:rgba(251,191,36,.07);
+    border-radius:11px;padding:10px 13px;font-size:12.5px;line-height:1.55;color:#f3d58a}
+  .warnbox.hidden{display:none}
+  .warnbox b{display:block;margin-bottom:4px;color:#fcd34d;font-size:12.5px}
+  .warnbox ul{margin:4px 0 0 16px;padding:0}
+  .warnbox li{margin:2px 0}
+
+  .help{font-size:13.5px;line-height:1.65;color:#c3cbd6}
+  .help h3{font-size:14px;margin:18px 0 6px;color:#fff}
+  .help code{background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:1px 5px;
+    font-family:ui-monospace,Consolas,monospace;font-size:12.5px;color:#a5d8f5}
+  .help ul{margin:6px 0 6px 18px;padding:0}
+  .help li{margin:3px 0}
+  .note{background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.22);color:#f3d58a;
+    border-radius:10px;padding:10px 12px;font-size:12.5px;line-height:1.55;margin:12px 0}
+
+  details.ref{margin-top:12px;border:1px solid var(--line);border-radius:11px;background:var(--panel2);padding:10px 12px}
+  details.ref summary{cursor:pointer;font-size:13.5px;font-weight:600;color:#cfe6f5}
+  details.ref table{font-size:12.5px;margin-top:10px}
+  details.ref td{padding:5px 6px;border-bottom:1px solid rgba(255,255,255,.05)}
+  details.ref td:first-child{white-space:nowrap;font-weight:600;color:#e7ebf0}
+  details.ref td:last-child{text-align:right}
+  details.ref td:nth-child(3){text-align:right;color:#8ee7d8;font-variant-numeric:tabular-nums}
+  details.ref td:nth-child(4){text-align:left;color:var(--muted);font-size:11.5px;line-height:1.4;white-space:normal}
+
+  @media (max-width:920px){
+    .cols{grid-template-columns:minmax(0,1fr)}
+    .side{order:2}
+    .main-col{order:1}
+    .rbig{font-size:32px}
+  }
+  @media (max-width:560px){
+    .form .frow{grid-template-columns:1fr 1fr}
+    .wrap{padding:14px 12px 40px}
+    .trow{gap:8px}
+    .ctl.sm{width:74px}
+    details.ref td:nth-child(4){display:none}
+  }
+  @media print{
+    body{background:#fff;color:#000}
+    .tabs,.top,.btn,.menu,.toast,.warnbox{display:none!important}
+    .panel{display:none!important}
+    .panel.active,.panel.print-me{display:block!important}
+    .card{background:#fff;border:1px solid #bbb;break-inside:avoid}
+    .result{background:#fff}
+    .rbig,.total b{color:#000}
+    td{border-color:#ddd}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="logo" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#dff3ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2 21 7v10l-9 5-9-5V7z"/><path d="M3 7l9 5 9-5"/><path d="M12 12v10"/>
+      </svg>
+    </div>
+    <div class="brand">
+      <h1>TitoV3D Calc</h1>
+      <div class="v">калькулятор себестоимости и цены печати · v6.0</div>
+    </div>
+    <div class="spacer"></div>
+    <button class="iconbtn" id="btnMenu" title="Данные и экспорт" aria-label="Меню">⋯</button>
+  </header>
+
+  <div class="menu" id="menu">
+    <button type="button" data-act="export-json">⬇ Экспорт данных (.json)</button>
+    <button type="button" data-act="import-json">⬆ Импорт данных (.json)</button>
+    <button type="button" data-act="export-csv">📄 История в CSV</button>
+    <button type="button" data-act="restore-backup" style="display:none">↩ Восстановить предыдущие данные</button>
+    <div class="sep"></div>
+    <button type="button" data-act="reset">↺ Сброс к заводским</button>
+  </div>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-tab="calc">Калькулятор</button>
+    <button class="tab" data-tab="history">История</button>
+    <button class="tab" data-tab="printers">Принтеры</button>
+    <button class="tab" data-tab="filaments">Филаменты</button>
+    <button class="tab" data-tab="settings">Настройки</button>
+    <button class="tab" data-tab="help">Справка</button>
+  </nav>
+
+  <!-- ================= КАЛЬКУЛЯТОР ================= -->
+  <section class="panel active" id="panel-calc">
+    <div class="cols">
+      <div class="main-col">
+        <section class="card">
+          <h2>Что печатаем</h2>
+          <div class="fields">
+            <div class="field">
+              <label for="cPrinter">Принтер</label>
+              <div class="ctl"><select id="cPrinter"></select></div>
+            </div>
+            <div class="field">
+              <label for="cFilament">Филамент</label>
+              <div class="ctl"><select id="cFilament"></select></div>
+            </div>
+            <div class="field">
+              <label for="cGrams">Вес модели, г</label>
+              <div class="ctl"><input id="cGrams" type="number" inputmode="decimal" step="any" min="0" value="0"><span class="u">г</span></div>
+            </div>
+            <div class="field">
+              <label for="cDelivery">Доставка, ₽</label>
+              <div class="ctl"><input id="cDelivery" type="number" inputmode="decimal" step="any" min="0" value="0"><span class="u">₽</span></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>Время</h2>
+          <div class="trow">
+            <span class="tlabel">Печать <span style="color:var(--muted2);font-size:11.5px">(оператор следит всё время)</span></span>
+            <div class="tpair">
+              <div class="ctl sm"><input id="tPrintH" type="number" inputmode="decimal" step="any" min="0" value="0"><span class="u">ч</span></div>
+              <div class="ctl sm"><input id="tPrintM" type="number" inputmode="decimal" step="any" min="0" max="59" value="0"><span class="u">мин</span></div>
+            </div>
+          </div>
+          <div class="trow">
+            <span class="tlabel">Моделирование</span>
+            <div class="tpair">
+              <div class="ctl sm"><input id="tModelH" type="number" inputmode="decimal" step="any" min="0" value="0"><span class="u">ч</span></div>
+              <div class="ctl sm"><input id="tModelM" type="number" inputmode="decimal" step="any" min="0" max="59" value="0"><span class="u">мин</span></div>
+            </div>
+          </div>
+          <div class="trow">
+            <span class="tlabel">Постобработка</span>
+            <div class="tpair">
+              <div class="ctl sm"><input id="tPostH" type="number" inputmode="decimal" step="any" min="0" value="0"><span class="u">ч</span></div>
+              <div class="ctl sm"><input id="tPostM" type="number" inputmode="decimal" step="any" min="0" max="59" value="0"><span class="u">мин</span></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>Наценка</h2>
+          <div class="fields">
+            <div class="field">
+              <label for="cMarkup">Наценка к себестоимости, %</label>
+              <div class="ctl"><input id="cMarkup" type="number" inputmode="decimal" step="any" min="0" value="40"><span class="u">%</span></div>
+            </div>
+            <div class="field">
+              <label>Маржа при этой наценке</label>
+              <div class="ctl" style="background:transparent;border-style:dashed">
+                <div id="markupMargin" style="padding:10px 12px;font-size:14px;color:var(--muted)">—</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <button class="btn primary big" id="btnCalc" type="button">Рассчитать</button>
+        <div class="warnbox hidden" id="calcWarnings"></div>
+      </div>
+
+      <aside class="side">
+        <section class="card result" id="resultCard">
+          <div class="empty" id="resultEmpty">Выберите принтер и филамент,<br>укажите вес и время печати</div>
+          <div id="resultBody" style="display:none"></div>
+        </section>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ================= ИСТОРИЯ ================= -->
+  <section class="panel" id="panel-history">
+    <div class="card-head" style="margin-bottom:14px">
+      <div>
+        <div class="section-title">История заказов</div>
+        <div class="section-sub" id="historySummary">Нет записей</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn sm" id="btnHistCsv" type="button">CSV</button>
+        <button class="btn sm danger" id="btnHistClear" type="button">Очистить</button>
+      </div>
+    </div>
+    <div class="list" id="historyList"></div>
+  </section>
+
+  <!-- ================= ПРИНТЕРЫ ================= -->
+  <section class="panel" id="panel-printers">
+    <div class="card-head" style="margin-bottom:14px">
+      <div>
+        <div class="section-title">Принтеры</div>
+        <div class="section-sub">Мощность, цена и ресурс — на них считается амортизация</div>
+      </div>
+      <button class="btn primary sm" id="btnAddPrinter" type="button">+ Добавить</button>
+    </div>
+
+    <div class="form hidden" id="printerForm">
+      <div class="frow">
+        <div class="field full">
+          <label for="pName">Название</label>
+          <div class="ctl"><input id="pName" type="text" maxlength="60" autocomplete="off" placeholder="Например, K1 Max"></div>
+        </div>
+        <div class="field">
+          <label for="pPower">Мощность, Вт</label>
+          <div class="ctl"><input id="pPower" type="number" inputmode="decimal" step="any" min="0" value="0"><span class="u">Вт</span></div>
+          <div class="hint">Средняя за печать: K1C ≈ 350 Вт, P2S ≈ 200 Вт (PLA)</div>
+        </div>
+        <div class="field">
+          <label for="pPrice">Цена, ₽</label>
+          <div class="ctl"><input id="pPrice" type="number" inputmode="decimal" step="any" min="0" value="0"><span class="u">₽</span></div>
+        </div>
+        <div class="field full">
+          <label for="pRes">Основной ресурс, ч</label>
+          <div class="ctl"><input id="pRes" type="number" inputmode="decimal" step="any" min="0" value="3000"><span class="u">ч</span></div>
+        </div>
+      </div>
+      <div class="fbuttons">
+        <button class="btn ok" id="btnSavePrinter" type="button">Сохранить</button>
+        <button class="btn ghost" id="btnCancelPrinter" type="button">Отмена</button>
+      </div>
+    </div>
+
+    <div class="list" id="printerList"></div>
+  </section>
+
+  <!-- ================= ФИЛАМЕНТЫ ================= -->
+  <section class="panel" id="panel-filaments">
+    <div class="card-head" style="margin-bottom:14px">
+      <div>
+        <div class="section-title">Филаменты</div>
+        <div class="section-sub">Цена катушки, вес и коэффициент сложности (PLA = 1.50)</div>
+      </div>
+      <button class="btn primary sm" id="btnAddFilament" type="button">+ Добавить</button>
+    </div>
+
+    <div class="form hidden" id="filamentForm">
+      <div class="frow">
+        <div class="field full">
+          <label for="fName">Название</label>
+          <div class="ctl"><input id="fName" type="text" maxlength="60" autocomplete="off" placeholder="Например, PETG"></div>
+        </div>
+        <div class="field">
+          <label for="fPrice">Цена катушки, ₽</label>
+          <div class="ctl"><input id="fPrice" type="number" inputmode="decimal" step="any" min="0" value="0"><span class="u">₽</span></div>
+        </div>
+        <div class="field">
+          <label for="fWeight">Вес катушки, кг</label>
+          <div class="ctl"><input id="fWeight" type="number" inputmode="decimal" step="any" min="0" value="1"><span class="u">кг</span></div>
+        </div>
+        <div class="field full">
+          <label for="fComplexity">Коэффициент сложности (PLA = 1.50, минимум 1.00)</label>
+          <div class="ctl"><input id="fComplexity" type="number" inputmode="decimal" step="any" min="1" value="1.5"><span class="u">×</span></div>
+        </div>
+      </div>
+      <div class="fbuttons">
+        <button class="btn ok" id="btnSaveFilament" type="button">Сохранить</button>
+        <button class="btn ghost" id="btnCancelFilament" type="button">Отмена</button>
+      </div>
+    </div>
+
+    <div class="ctl" style="margin-bottom:12px">
+      <input id="fFilter" type="search" autocomplete="off" placeholder="Поиск по названию материала…">
+      <span class="u" id="fCount"></span>
+    </div>
+
+    <div class="list" id="filamentList"></div>
+  </section>
+
+  <!-- ================= НАСТРОЙКИ ================= -->
+  <section class="panel" id="panel-settings">
+    <div class="card">
+      <h2>Тарифы и зарплаты</h2>
+      <div class="fields">
+        <div class="field full">
+          <label for="sElectricity">Электричество, ₽/кВт·ч</label>
+          <div class="ctl"><input id="sElectricity" type="number" inputmode="decimal" step="any" min="0" value="5.5"><span class="u">₽</span></div>
+        </div>
+        <div class="field">
+          <label for="sModeling">Моделирование, ₽/ч</label>
+          <div class="ctl"><input id="sModeling" type="number" inputmode="decimal" step="any" min="0" value="500"><span class="u">₽/ч</span></div>
+        </div>
+        <div class="field">
+          <label for="sPrinting">Печать (оператор), ₽/ч</label>
+          <div class="ctl"><input id="sPrinting" type="number" inputmode="decimal" step="any" min="0" value="200"><span class="u">₽/ч</span></div>
+        </div>
+        <div class="field">
+          <label for="sPost">Постобработка, ₽/ч</label>
+          <div class="ctl"><input id="sPost" type="number" inputmode="decimal" step="any" min="0" value="300"><span class="u">₽/ч</span></div>
+        </div>
+        <div class="field">
+          <label for="sOverhead">Накладные расходы, коэф.</label>
+          <div class="ctl"><input id="sOverhead" type="number" inputmode="decimal" step="any" min="0" value="0.15"><span class="u">×</span></div>
+        </div>
+      </div>
+      <div style="margin-top:14px">
+        <button class="btn ok" id="btnSaveSettings" type="button">Сохранить настройки</button>
+      </div>
+      <div class="note" id="settingsNote" style="display:none"></div>
+    </div>
+
+    <div class="card">
+      <h2>Хранение данных</h2>
+      <div class="help" id="storageInfo">—</div>
+    </div>
+  </section>
+
+  <!-- ================= СПРАВКА ================= -->
+  <section class="panel" id="panel-help">
+    <div class="card">
+      <h2>Как считает программа</h2>
+      <div class="help">
+        <p>Себестоимость → наценка → цена продажи.</p>
+
+        <h3>1. Материал</h3>
+        <p><code>цена_за_грамм = цена_катушки / (вес_катушки_кг × 1000)</code><br>
+           <code>материал = вес_модели_г × цена_за_грамм</code></p>
+
+        <h3>2. Электричество</h3>
+        <p><code>электричество = мощность_Вт / 1000 × время_печати_ч × тариф</code></p>
+
+        <h3>3. Амортизация</h3>
+        <p><code>амортизация_в_час = цена_принтера / основной_ресурс_ч</code><br>
+           <code>амортизация = амортизация_в_час × время_печати_ч</code></p>
+
+        <h3>4. Работа</h3>
+        <p>Оператор следит за печатью всё время, поэтому его часы равны времени печати:<br>
+           <code>моделирование = часы_моделирования × ставка</code><br>
+           <code>оператор = время_печати × ставка_оператора</code><br>
+           <code>постобработка = часы_постобработки × ставка</code></p>
+
+        <h3>5. База</h3>
+        <p><code>база = материал + электричество + амортизация + вся работа</code></p>
+
+        <h3>6. Сложность материала</h3>
+        <p><code>сложность = (материал + электричество) × (коэф_сложности − 1)</code><br>
+           Точка отсчёта — <b>PLA = 1.50</b>: уже он даёт +50 % к материалу и электричеству
+           за настройку, контроль первого слоя и риск брака.</p>
+
+        <h3>7. Накладные расходы</h3>
+        <p><code>накладные = (база + сложность) × коэф_накладных</code></p>
+
+        <h3>8. Себестоимость</h3>
+        <p><code>себестоимость = база + сложность + накладные + доставка</code></p>
+
+        <h3>9. Наценка и цена</h3>
+        <p><code>цена = себестоимость × (1 + наценка% / 100)</code><br>
+           <code>прибыль = цена − себестоимость</code><br>
+           <code>маржа = прибыль / цена × 100</code></p>
+        <div class="note">Наценка 100 % даёт маржу 50 %. Наценка 40 % — маржу 28,6 %.
+          Это разные числа, не путайте их при переговорах.</div>
+
+        <h3>Остаток ресурса</h3>
+        <p>Считается динамически: <code>основной_ресурс − сумма времени печати из истории</code>.
+           Удаление записи возвращает ресурс, изменение ресурса принтера пересчитывает остаток.</p>
+
+        <h3>Как считались коэффициенты сложности</h3>
+        <p>Каждый материал оценён по 8 критериям от 0 до 1, затем баллы сведены с весами.
+           Коэффициент: <code>k = 1.5 + (S − S_PLA) × 2.4</code>, ограничение 1.5…3.2.</p>
+        <ul>
+          <li>температура и тепловой режим — 18 %</li>
+          <li>коробление и усадка — 18 %</li>
+          <li>адгезия к столу и камере — 12 %</li>
+          <li>гигроскопичность и сушка — 12 %</li>
+          <li>абразивность и износ сопла — 10 %</li>
+          <li>испарения и вентиляция — 10 %</li>
+          <li>скорость и стабильность процесса — 12 %</li>
+          <li>постобработка — 8 %</li>
+        </ul>
+
+        <details class="ref">
+          <summary>Таблица всех материалов и коэффициентов</summary>
+          <table><tbody id="catalogTable"></tbody></table>
+        </details>
+
+        <h3>Проверки и ограничения</h3>
+        <ul>
+          <li>Отрицательные значения приводятся к нулю, слишком большие — к разумному максимуму.</li>
+          <li>Дробные числа можно вводить и с точкой, и с запятой.</li>
+          <li>Деление на ноль (вес катушки = 0, ресурс = 0) не даёт «∞»: строка обнуляется, появляется предупреждение.</li>
+          <li>Коэффициент сложности меньше 1 невозможен — он не уменьшает стоимость.</li>
+          <li>Повторное сохранение той же печати блокируется по принтеру, филаменту,
+              весу и времени — чтобы не списать ресурс дважды. Изменение наценки или
+              доставки сохранение не разблокирует: чтобы исправить цену в записи,
+              удалите её в истории и сохраните заново.</li>
+          <li>Имена принтеров и филаментов уникальны без учёта регистра; замена существующего требует подтверждения.</li>
+        </ul>
+
+        <h3>Перенос данных</h3>
+        <p>Меню «⋯» → <b>Экспорт данных</b> сохранит файл <code>3d_calc_data_v2.json</code>.
+           Формат совместим с десктопной версией на Python; новые поля (наценка и цена в истории)
+           старые версии просто игнорируют.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal" id="textModal">
+  <div class="modal-box">
+    <div class="modal-title" id="textModalTitle">Файл</div>
+    <textarea id="textModalBody" readonly spellcheck="false"></textarea>
+    <div class="modal-actions">
+      <button class="btn ok" id="btnCopyText" type="button">Скопировать</button>
+      <button class="btn ghost" id="btnCloseText" type="button">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ================= КОНСТАНТЫ ================= */
+
+var APP_VERSION = "6.0";
+var STORE_KEY   = "tito_v3d_calc_v2";
+var BACKUP_KEY  = "tito_v3d_calc_backup";
+var CALC_KEY    = "tito_v3d_calc_form";
+var DATA_FILE_NAME = "3d_calc_data_v2.json";
+
+var MAX_IMPORT_BYTES = 5 * 1024 * 1024;
+var MAX_PRINTERS = 300;
+var MAX_FILAMENTS = 400;
+var MAX_HISTORY = 10000;
+var MAX_NAME_LEN = 60;
+
+var UNSAFE_KEYS = ["__proto__", "constructor", "prototype"];
+
+var GROUP_ORDER = ["Базовые", "Инженерные", "Гибкие", "Поддержки", "Высокотемпературные", "Другие"];
+
+/*
+ * Каталог FDM-материалов.
+ * k — коэффициент сложности печати, точка отсчёта PLA = 1.50.
+ * Методика: 8 критериев (температура, коробление, адгезия, гигроскопичность,
+ * абразивность, испарения, скорость, постобработка) → взвешенная оценка S →
+ * k = 1.5 + (S − S_PLA) × 2.4, ограничение 1.5…3.2.
+ * Цены — ориентировочные для РФ, катушка 1 кг; правятся в таблице.
+ */
+var CATALOG = [
+  { name: "PLA",                  price: 1300,  group: "Базовые", k: 1.50, why: "эталон: низкая температура, минимальное коробление, но хрупкий и боится тепла" },
+  { name: "PLA+",                 price: 1450,  group: "Базовые", k: 1.52, why: "добавки улучшают ударную вязкость, режимы как у PLA" },
+  { name: "PLA Silk",             price: 1700,  group: "Базовые", k: 1.61, why: "декоративный, низкая межслойная адгезия, склонен к расслоению" },
+  { name: "PLA Matte",            price: 1650,  group: "Базовые", k: 1.53, why: "матовые добавки, чуть ниже прочность и скорость" },
+  { name: "PLA-CF",               price: 3800,  group: "Базовые", k: 1.88, why: "углеволокно: абразив, нужно закалённое сопло, хрупче обычного PLA" },
+  { name: "PETG",                 price: 1400,  group: "Инженерные", k: 1.87, why: "липнет к столу, наросты, гигроскопичен, требует сушки" },
+  { name: "PCTG",                 price: 1750,  group: "Инженерные", k: 1.87, why: "прочнее PETG, хуже адгезия слоёв, обязательна сушка" },
+  { name: "PETG-CF",              price: 4200,  group: "Инженерные", k: 2.17, why: "абразив плюс гигроскопичность, повышенная температура" },
+  { name: "ABS",                  price: 1300,  group: "Инженерные", k: 2.45, why: "усадка и коробление, нужна камера, пары стирола" },
+  { name: "ASA",                  price: 1700,  group: "Инженерные", k: 2.33, why: "как ABS, но УФ-стойкий; пары, камера, коробление" },
+  { name: "HIPS",                 price: 1500,  group: "Инженерные", k: 2.18, why: "растворяется в лимонене, коробится, пары" },
+  { name: "PVB",                  price: 2200,  group: "Инженерные", k: 2.02, why: "хрупкий, сглаживается изопропанолом, боится влаги" },
+  { name: "PP",                   price: 2500,  group: "Инженерные", k: 2.47, why: "почти не липнет ни к чему, экстремальная усадка, нужен PP-стол" },
+  { name: "POM",                  price: 3200,  group: "Инженерные", k: 2.35, why: "плохая адгезия, при перегреве выделяет формальдегид" },
+  { name: "TPU 95A",              price: 2500,  group: "Гибкие", k: 2.04, why: "медленная печать, нужен direct-drive, гигроскопичен" },
+  { name: "TPU 85A",              price: 3200,  group: "Гибкие", k: 2.16, why: "очень мягкий: ещё медленнее, сложная ретракция" },
+  { name: "TPE/TPA",              price: 3500,  group: "Гибкие", k: 2.16, why: "эластомер, капризная подача и адгезия слоёв" },
+  { name: "PVA",                  price: 4500,  group: "Поддержки", k: 2.28, why: "растворяется в воде, крайне гигроскопичен" },
+  { name: "BVOH",                 price: 6000,  group: "Поддержки", k: 2.31, why: "растворяется быстрее PVA, дорогой, гигроскопичен" },
+  { name: "Breakaway",            price: 3500,  group: "Поддержки", k: 2.01, why: "хрупкий интерфейсный слой, ломкий, пары" },
+  { name: "PA6/PA12 (нейлон)",    price: 3000,  group: "Высокотемпературные", k: 2.42, why: "сильная гигроскопичность, коробление, нужны сушка и камера" },
+  { name: "PA-CF",                price: 5000,  group: "Высокотемпературные", k: 2.62, why: "абразив плюс гигроскопичность, сухие нити хрупкие" },
+  { name: "PA-GF",                price: 4500,  group: "Высокотемпературные", k: 2.60, why: "стекловолокно: абразив, ниже прочность, чем у CF" },
+  { name: "PC (поликарбонат)",    price: 3300,  group: "Высокотемпературные", k: 2.62, why: "высокая температура, коробление, нужны камера и сушка" },
+  { name: "PC-CF",                price: 6500,  group: "Высокотемпературные", k: 2.71, why: "абразив, хрупче, горячее сопло и камера" },
+  { name: "PEI / ULTEM",          price: 32000, group: "Высокотемпературные", k: 2.98, why: "360–400 °C, камера 150 °C, отжиг, очень дорог" },
+  { name: "PPS",                  price: 18000, group: "Высокотемпературные", k: 2.87, why: "300–340 °C, камера, пары, дорогой" },
+  { name: "PPS-CF",               price: 22000, group: "Высокотемпературные", k: 2.98, why: "абразив плюс высокая температура и камера" },
+  { name: "PPSU",                 price: 19000, group: "Высокотемпературные", k: 2.87, why: "350–380 °C, камера, отжиг" },
+  { name: "PEEK",                 price: 22000, group: "Высокотемпературные", k: 3.02, why: "380–450 °C, камера 120–200 °C, отжиг, лучший по прочности" },
+  { name: "PEEK-CF",              price: 28000, group: "Высокотемпературные", k: 3.12, why: "абразив, максимальные требования к оборудованию" },
+  { name: "PEKK",                 price: 30000, group: "Высокотемпературные", k: 3.00, why: "340–380 °C, камера, отжиг, дорогой" },
+  { name: "ESD / антистатик",     price: 5500,  group: "Базовые", k: 2.02, why: "наполнитель, чуть хуже адгезия и стабильность" },
+  { name: "FR UL94 V0",           price: 4000,  group: "Базовые", k: 2.15, why: "антипирены: хрупче, пары, хуже текучесть" },
+  { name: "Древесный (wood-fill)",price: 1900,  group: "Базовые", k: 1.97, why: "абразивная крошка, засоряет сопло, хрупкий" },
+  { name: "Металлонаполненный",   price: 3500,  group: "Базовые", k: 2.31, why: "очень абразивен, тяжёлый, износ сопла" },
+  { name: "Мраморный (marble)",   price: 1700,  group: "Базовые", k: 1.70, why: "минеральный наполнитель, хрупкий на излом" },
+  { name: "Светящийся (glow)",    price: 1800,  group: "Базовые", k: 1.84, why: "абразивный люминофор, износ сопла" },
+  { name: "Проводящий (conductive)", price: 5000, group: "Базовые", k: 2.23, why: "сажа/графит: абразив, нестабильная адгезия" },
+  { name: "Магнитный (iron-fill)",price: 3800,  group: "Базовые", k: 2.14, why: "железный порошок: абразив, тяжёлый" }
+];
+
+var CATALOG_BY_NAME = {};
+CATALOG.forEach(function(c){ CATALOG_BY_NAME[c.name] = c; });
+
+function buildDefaultFilaments(){
+  var o = {};
+  CATALOG.forEach(function(c){
+    o[c.name] = { spool_price: c.price, spool_weight: 1.0, complexity: c.k };
+  });
+  return o;
+}
+
+var DEFAULT_DATA = {
+  version: 2,
+  meta: { catalog: 2, printers: 2 },
+  printers: {
+    "Creality_K1C": { power: 350, price: 45000, initial_resource: 3000 },
+    "BambuLab_P2S": { power: 200, price: 65000, initial_resource: 3000 }
+  },
+  filaments: buildDefaultFilaments(),
+  settings: {
+    electricity_price: 5.5,
+    labor_hour_modeling: 500.0,
+    labor_hour_printing: 200.0,
+    labor_hour_post: 300.0,
+    overhead_coefficient: 0.15
+  },
+  history: []
+};
+
+/* ================= БАЗОВЫЕ УТИЛИТЫ ================= */
+
+function $(id){ return document.getElementById(id); }
+
+function deepClone(o){ return JSON.parse(JSON.stringify(o)); }
+
+function esc(s){
+  return String(s).replace(/[&<>"']/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+}
+
+function num(v){
+  if (typeof v === "number") return isFinite(v) ? v : 0;
+  var s = String(v == null ? "" : v).replace(/\s|\u00A0/g, "").replace(",", ".");
+  var n = parseFloat(s);
+  return isFinite(n) ? n : 0;
+}
+
+function clamp(v, min, max){
+  v = num(v);
+  if (v < min) return min;
+  if (v > max) return max;
+  return v;
+}
+
+function safeKey(k){
+  var s = String(k == null ? "" : k).replace(/\s+/g, " ").trim();
+  if (!s) return null;
+  if (s.length > MAX_NAME_LEN) s = s.slice(0, MAX_NAME_LEN);
+  if (UNSAFE_KEYS.indexOf(s) !== -1) return null;
+  if (s.indexOf("\u0000") !== -1) return null;
+  return s;
+}
+
+var nf2 = new Intl.NumberFormat("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+var nf1 = new Intl.NumberFormat("ru-RU", { minimumFractionDigits: 0, maximumFractionDigits: 1 });
+
+function money(v){ return nf2.format(isFinite(v) ? v : 0) + "\u00A0₽"; }
+
+function hhmm(h){
+  h = num(h);
+  var hh = Math.floor(h);
+  var mm = Math.round((h - hh) * 60);
+  if (mm === 60) { hh += 1; mm = 0; }
+  return hh + " ч" + (mm ? " " + mm + " мин" : "");
+}
+
+var toastTimer = null;
+function toast(msg){
+  var el = $("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ el.classList.remove("show"); }, 2600);
+}
+
+/* ================= ХРАНЕНИЕ ================= */
+
+var storageOk = true;
+var data = null;
+
+function normalize(d){
+  var out = deepClone(DEFAULT_DATA);
+  if (!d || typeof d !== "object" || Array.isArray(d)) return out;
+
+  out.meta = {
+    catalog: clamp(d.meta && d.meta.catalog, 0, 999),
+    printers: clamp(d.meta && d.meta.printers, 0, 999)
+  };
+
+  if (d.printers && typeof d.printers === "object" && !Array.isArray(d.printers)) {
+    out.printers = {};
+    var pc = 0;
+    Object.keys(d.printers).forEach(function(raw){
+      if (pc >= MAX_PRINTERS) return;
+      var name = safeKey(raw);
+      if (!name) return;
+      var p = d.printers[raw] || {};
+      out.printers[name] = {
+        power:            clamp(p.power, 0, 100000),
+        price:            clamp(p.price, 0, 100000000),
+        initial_resource: clamp(p.initial_resource, 0, 1000000)
+      };
+      pc++;
+    });
+  }
+
+  if (d.filaments && typeof d.filaments === "object" && !Array.isArray(d.filaments)) {
+    out.filaments = {};
+    var fc = 0;
+    Object.keys(d.filaments).forEach(function(raw){
+      if (fc >= MAX_FILAMENTS) return;
+      var name = safeKey(raw);
+      if (!name) return;
+      var f = d.filaments[raw] || {};
+      out.filaments[name] = {
+        spool_price:  clamp(f.spool_price, 0, 100000000),
+        spool_weight: clamp(f.spool_weight, 0, 1000),
+        complexity:   Math.max(1, clamp(f.complexity == null ? 1 : f.complexity, 1, 100))
+      };
+      fc++;
+    });
+  }
+
+  if (d.settings && typeof d.settings === "object" && !Array.isArray(d.settings)) {
+    out.settings.electricity_price   = clamp(d.settings.electricity_price, 0, 10000);
+    out.settings.labor_hour_modeling = clamp(d.settings.labor_hour_modeling, 0, 1000000);
+    out.settings.labor_hour_printing = clamp(d.settings.labor_hour_printing, 0, 1000000);
+    out.settings.labor_hour_post     = clamp(d.settings.labor_hour_post, 0, 1000000);
+    out.settings.overhead_coefficient = clamp(d.settings.overhead_coefficient, 0, 10);
+  }
+
+  if (Array.isArray(d.history)) {
+    out.history = [];
+    var hc = 0;
+    d.history.forEach(function(h){
+      if (hc >= MAX_HISTORY) return;
+      if (!h || typeof h !== "object") return;
+      var cost = clamp(h.total_cost, 0, 100000000);
+      out.history.push({
+        id: String(h.id || (Date.now() + "-" + hc)),
+        date: String(h.date || ""),
+        printer: String(h.printer || ""),
+        filament: String(h.filament || ""),
+        grams: clamp(h.grams, 0, 100000),
+        total_cost: cost,
+        print_time: clamp(h.print_time, 0, 1000000),
+        markup_pct: clamp(h.markup_pct, 0, 1000),
+        price: h.price == null ? cost : clamp(h.price, 0, 100000000)
+      });
+      hc++;
+    });
+  }
+  return out;
+}
+
+function loadData(){
+  var raw = null;
+  try { raw = localStorage.getItem(STORE_KEY); }
+  catch (e) { storageOk = false; }
+
+  if (!raw) return deepClone(DEFAULT_DATA);
+
+  try { return normalize(JSON.parse(raw)); }
+  catch (e) { return deepClone(DEFAULT_DATA); }
+}
+
+function saveData(){
+  if (!storageOk) return false;
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify(data));
+    return true;
+  } catch (e) {
+    storageOk = false;
+    toast("Не удалось сохранить: хранилище недоступно");
+    return false;
+  }
+}
+
+function backupData(){
+  try { localStorage.setItem(BACKUP_KEY, JSON.stringify(data)); }
+  catch (e) { /* нет места — не критично */ }
+  updateMenuState();
+}
+
+function hasBackup(){
+  try { return !!localStorage.getItem(BACKUP_KEY); }
+  catch (e) { return false; }
+}
+
+function updateMenuState(){
+  var btn = document.querySelector('[data-act="restore-backup"]');
+  if (btn) btn.style.display = hasBackup() ? "block" : "none";
+}
+
+/* ============ МИГРАЦИИ (v5 / v5.1) ============ */
+
+var OLD_DEFAULT_COMPLEXITY = { "PLA": 1.0, "PETG": 1.05, "ABS": 1.2 };
+var LEGACY_PRINTERS = ["K1", "K1 Max", "Ender 3"];
+
+function migrateCatalog(){
+  if (data.meta && num(data.meta.catalog) >= 2) return 0;
+
+  var added = 0;
+
+  // 1. Старые дефолтные коэффициенты (PLA=1.0 и т.д.) переводим на новую шкалу PLA=1.5
+  Object.keys(OLD_DEFAULT_COMPLEXITY).forEach(function(name){
+    var f = data.filaments[name];
+    var c = CATALOG_BY_NAME[name];
+    if (f && c && Math.abs(num(f.complexity) - OLD_DEFAULT_COMPLEXITY[name]) < 1e-9) {
+      f.complexity = c.k;
+    }
+  });
+
+  // 2. Добавляем отсутствующие материалы каталога, не трогая существующие
+  CATALOG.forEach(function(c){
+    if (!data.filaments[c.name]) {
+      data.filaments[c.name] = { spool_price: c.price, spool_weight: 1.0, complexity: c.k };
+      added++;
+    }
+  });
+
+  data.meta = data.meta || {};
+  data.meta.catalog = 2;
+  return added;
+}
+
+function migratePrinters(removeLegacy){
+  var result = { added: 0, removed: 0, keptUsed: [] };
+  if (data.meta && num(data.meta.printers) >= 2) return result;
+
+  if (removeLegacy !== false) {
+    LEGACY_PRINTERS.forEach(function(name){
+      if (!data.printers[name]) return;
+      var used = (data.history || []).some(function(h){ return h.printer === name; });
+      if (used) { result.keptUsed.push(name); return; }
+      delete data.printers[name];
+      result.removed++;
+    });
+  }
+
+  Object.keys(DEFAULT_DATA.printers).forEach(function(name){
+    if (!data.printers[name]) {
+      data.printers[name] = deepClone(DEFAULT_DATA.printers[name]);
+      result.added++;
+    }
+  });
+
+  data.meta = data.meta || {};
+  data.meta.printers = 2;
+  return result;
+}
+
+function runMigrations(removeLegacy){
+  var fAdded = migrateCatalog();
+  var pr = migratePrinters(removeLegacy);
+  saveData();
+
+  var parts = [];
+  if (fAdded) parts.push("материалов +" + fAdded);
+  if (pr.added) parts.push("принтеров +" + pr.added);
+  if (pr.removed) parts.push("удалено старых принтеров: " + pr.removed);
+  if (pr.keptUsed.length) parts.push("оставлены с историей: " + pr.keptUsed.join(", "));
+
+  if (parts.length) {
+    setTimeout(function(){ toast("Данные обновлены: " + parts.join(" · ")); }, 600);
+  }
+}
+
+/* ================= РАСЧЁТ ================= */
+
+function calcCost(printer, filament, grams, times, delivery, settings){
+  printer  = printer  || {};
+  filament = filament || {};
+  settings = settings || {};
+  times = times || [];
+
+  var g = clamp(grams, 0, 100000);
+
+  var printTime    = clamp(times[0], 0, 10000) + clamp(times[1], 0, 10000) / 60;
+  var modelingTime = clamp(times[2], 0, 10000) + clamp(times[3], 0, 10000) / 60;
+  var postTime     = clamp(times[4], 0, 10000) + clamp(times[5], 0, 10000) / 60;
+
+  // 1. Материал
+  var spoolWeight = clamp(filament.spool_weight, 0, 1000);
+  var pricePerGram = spoolWeight > 0
+    ? clamp(filament.spool_price, 0, 100000000) / (spoolWeight * 1000)
+    : 0;
+  var material = g * pricePerGram;
+
+  // 2. Электричество
+  var electricity = clamp(printer.power, 0, 100000) / 1000 * printTime * clamp(settings.electricity_price, 0, 10000);
+
+  // 3. Амортизация
+  var resource = clamp(printer.initial_resource, 0, 1000000);
+  var amortPerHour = resource > 0 ? clamp(printer.price, 0, 100000000) / resource : 0;
+  var amort = amortPerHour * printTime;
+
+  // 4. Работа (оператор следит за печатью всё время)
+  var cModeling = modelingTime * clamp(settings.labor_hour_modeling, 0, 1000000);
+  var cOperator = printTime * clamp(settings.labor_hour_printing, 0, 1000000);
+  var cPost     = postTime * clamp(settings.labor_hour_post, 0, 1000000);
+  var laborTotal = cModeling + cOperator + cPost;
+
+  // 5. База
+  var base = material + electricity + amort + laborTotal;
+
+  // 6. Сложность (коэффициент не может уменьшать стоимость; PLA = 1.5)
+  var k = Math.max(1, clamp(filament.complexity == null ? 1 : filament.complexity, 1, 100));
+  var complexity = (material + electricity) * (k - 1);
+
+  // 7. Накладные
+  var overhead = (base + complexity) * clamp(settings.overhead_coefficient, 0, 10);
+
+  // 8. Себестоимость
+  var total = base + complexity + overhead + clamp(delivery, 0, 100000000);
+
+  return {
+    detail: {
+      "Материал": material,
+      "Электричество": electricity,
+      "Амортизация": amort,
+      "Работа (Моделирование)": cModeling,
+      "Работа (Оператор печати)": cOperator,
+      "Работа (Постобработка)": cPost,
+      "Сложность материала": complexity,
+      "Накладные расходы": overhead,
+      "Доставка": clamp(delivery, 0, 100000000)
+    },
+    base: base,
+    total: isFinite(total) ? total : 0,
+    printTime: printTime,
+    pricePerGram: pricePerGram
+  };
+}
+
+function usedHours(printerName){
+  var t = 0;
+  (data.history || []).forEach(function(h){
+    if (h.printer === printerName) t += num(h.print_time);
+  });
+  return t;
+}
+
+/* ================= ВАЛИДАЦИЯ ПОЛЕЙ ================= */
+
+var NUM_SPECS = {
+  cGrams:      { min: 0, max: 100000 },
+  cDelivery:   { min: 0, max: 100000000 },
+  cMarkup:     { min: 0, max: 1000 },
+  tPrintH:     { min: 0, max: 10000 },
+  tPrintM:     { min: 0, max: 10000 },
+  tModelH:     { min: 0, max: 10000 },
+  tModelM:     { min: 0, max: 10000 },
+  tPostH:      { min: 0, max: 10000 },
+  tPostM:      { min: 0, max: 10000 },
+  pPower:      { min: 0, max: 100000 },
+  pPrice:      { min: 0, max: 100000000 },
+  pRes:        { min: 0, max: 1000000 },
+  fPrice:      { min: 0, max: 100000000 },
+  fWeight:     { min: 0, max: 1000 },
+  fComplexity: { min: 1, max: 100 },
+  sElectricity:{ min: 0, max: 10000 },
+  sModeling:   { min: 0, max: 1000000 },
+  sPrinting:   { min: 0, max: 1000000 },
+  sPost:       { min: 0, max: 1000000 },
+  sOverhead:   { min: 0, max: 10 }
+};
+
+function markField(el, bad){
+  var ctl = el && el.closest ? el.closest(".ctl") : null;
+  if (ctl) ctl.classList.toggle("invalid", !!bad);
+}
+
+function readF(id, label, issues){
+  var el = $(id);
+  var spec = NUM_SPECS[id] || { min: 0, max: 1000000000 };
+  var raw = String(el.value).trim();
+  var v = num(raw);
+  var out = v;
+
+  if (raw === "") out = 0;
+  if (out < spec.min) out = spec.min;
+  if (out > spec.max) out = spec.max;
+
+  var bad = raw !== "" && out !== v;
+  markField(el, bad);
+
+  if (bad) {
+    issues.push(label + ": допустимо от " + nf1.format(spec.min) + " до " + nf1.format(spec.max) +
+                ", принято " + nf1.format(out));
+  }
+  return out;
+}
+
+function normalizeField(el){
+  if (!el || el.tagName !== "INPUT" || el.type !== "number") return;
+  var spec = NUM_SPECS[el.id];
+  if (!spec) return;
+  var raw = String(el.value).trim();
+  if (raw === "") return;
+  var v = num(raw);
+  if (v < spec.min || v > spec.max) {
+    el.value = String(clamp(v, spec.min, spec.max));
+    markField(el, true);
+    setTimeout(function(){ markField(el, false); }, 1200);
+  }
+}
+
+/* ================= ВКЛАДКИ ================= */
+
+var currentTab = "calc";
+
+function setTab(name){
+  currentTab = name;
+  var tabs = document.querySelectorAll(".tab");
+  for (var i = 0; i < tabs.length; i++) {
+    tabs[i].classList.toggle("active", tabs[i].getAttribute("data-tab") === name);
+  }
+  var panels = document.querySelectorAll(".panel");
+  for (var j = 0; j < panels.length; j++) {
+    panels[j].classList.toggle("active", panels[j].id === "panel-" + name);
+  }
+  if (name === "history") renderHistory();
+  if (name === "printers") renderPrinters();
+  if (name === "filaments") renderFilaments();
+  if (name === "settings") { fillSettings(); renderStorageInfo(); }
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+/* ================= КАЛЬКУЛЯТОР ================= */
+
+var lastCalc = null;
+var savedSignature = null;
+var calcStateTimer = null;
+
+function fillSelect(sel, keys){
+  var cur = sel.value;
+  var html = "";
+  for (var i = 0; i < keys.length; i++) {
+    html += '<option value="' + esc(keys[i]) + '">' + esc(keys[i]) + "</option>";
+  }
+  sel.innerHTML = html;
+  if (keys.indexOf(cur) !== -1) sel.value = cur;
+}
+
+function fillFilamentSelect(){
+  var sel = $("cFilament");
+  var cur = sel.value;
+  var names = Object.keys(data.filaments);
+
+  var groups = {};
+  var order = [];
+  names.forEach(function(n){
+    var g = CATALOG_BY_NAME[n] ? CATALOG_BY_NAME[n].group : "Другие";
+    if (!groups[g]) { groups[g] = []; order.push(g); }
+    groups[g].push(n);
+  });
+
+  var html = "";
+  order.sort(function(a, b){
+    var ia = GROUP_ORDER.indexOf(a), ib = GROUP_ORDER.indexOf(b);
+    if (ia === -1) ia = 99;
+    if (ib === -1) ib = 99;
+    return ia - ib;
+  }).forEach(function(g){
+    html += '<optgroup label="' + esc(g) + '">';
+    groups[g].forEach(function(n){
+      html += '<option value="' + esc(n) + '">' + esc(n) + "</option>";
+    });
+    html += "</optgroup>";
+  });
+
+  sel.innerHTML = html;
+  if (names.indexOf(cur) !== -1) sel.value = cur;
+}
+
+function updateCombos(){
+  fillSelect($("cPrinter"), Object.keys(data.printers));
+  fillFilamentSelect();
+}
+
+function readTimes(issues){
+  return [
+    readF("tPrintH", "Печать (ч)", issues),
+    readF("tPrintM", "Печать (мин)", issues),
+    readF("tModelH", "Моделирование (ч)", issues),
+    readF("tModelM", "Моделирование (мин)", issues),
+    readF("tPostH", "Постобработка (ч)", issues),
+    readF("tPostM", "Постобработка (мин)", issues)
+  ];
+}
+
+function modelIssues(pName, fName, grams, printTime){
+  var out = [];
+  var p = data.printers[pName];
+  var f = data.filaments[fName];
+  if (!p || !f) return out;
+
+  if (num(f.spool_weight) <= 0) {
+    out.push("Филамент «" + fName + "»: не указан вес катушки — материал считается бесплатным.");
+  }
+  if (num(f.spool_price) <= 0) {
+    out.push("Филамент «" + fName + "»: не указана цена катушки — материал считается бесплатным.");
+  }
+  if (num(p.initial_resource) <= 0) {
+    out.push("Принтер «" + pName + "»: не указан ресурс — амортизация не начисляется.");
+  }
+  if (num(p.price) <= 0) {
+    out.push("Принтер «" + pName + "»: не указана цена — амортизация равна нулю.");
+  }
+  if (num(p.power) <= 0) {
+    out.push("Принтер «" + pName + "»: мощность 0 Вт — электричество не начисляется.");
+  }
+  if (num(f.complexity) < 1) {
+    out.push("Филамент «" + fName + "»: коэффициент сложности меньше 1 — применяется 1.0.");
+  }
+  if (grams <= 0) out.push("Вес модели 0 г — материал не учтён.");
+  if (printTime <= 0) out.push("Время печати 0 ч — амортизация и работа оператора не учтены.");
+
+  var left = num(p.initial_resource) - usedHours(pName);
+  if (left < 0) {
+    out.push("Ресурс принтера «" + pName + "» исчерпан: перерасход " +
+             nf1.format(Math.abs(left)) + " ч. Стоит поднять ресурс на вкладке «Принтеры».");
+  }
+  return out;
+}
+
+function renderWarnings(list){
+  var box = $("calcWarnings");
+  if (!list || !list.length) {
+    box.classList.add("hidden");
+    box.innerHTML = "";
+    return;
+  }
+  box.classList.remove("hidden");
+  box.innerHTML = "<b>На что обратить внимание</b><ul>" +
+    list.map(function(w){ return "<li>" + esc(w) + "</li>"; }).join("") + "</ul>";
+}
+
+function updateMarginHint(markup){
+  var el = $("markupMargin");
+  if (!el) return;
+  if (markup <= 0) { el.textContent = "0 % (цена = себестоимость)"; return; }
+  var margin = markup / (100 + markup) * 100;
+  el.textContent = nf1.format(margin) + " % от цены";
+}
+
+function renderResult(res, pName, fName, sig, markup){
+  var body = $("resultBody");
+  var empty = $("resultEmpty");
+
+  if (!res) {
+    empty.style.display = "";
+    body.style.display = "none";
+    return;
+  }
+  empty.style.display = "none";
+  body.style.display = "";
+
+  var price  = res.total * (1 + markup / 100);
+  var profit = price - res.total;
+  var margin = price > 0 ? profit / price * 100 : 0;
+
+  var rows = "";
+  Object.keys(res.detail).forEach(function(k){
+    rows += "<tr><td>" + esc(k) + "</td><td>" + money(res.detail[k]) + "</td></tr>";
+    if (k === "Работа (Постобработка)") {
+      rows += '<tr class="base"><td>Базовая себестоимость</td><td>' + money(res.base) + "</td></tr>";
+    }
+  });
+  rows += '<tr class="sum"><td>Себестоимость</td><td>' + money(res.total) + "</td></tr>";
+  rows += '<tr class="sum"><td>Наценка ' + nf1.format(markup) + ' %</td><td>' + money(profit) + "</td></tr>";
+  rows += '<tr class="price"><td>Цена продажи</td><td>' + money(price) + "</td></tr>";
+
+  var p = data.printers[pName] || {};
+  var left = num(p.initial_resource) - usedHours(pName);
+  var leftCls = left < 0 ? "neg" : (left < 100 ? "low" : "");
+  var already = (savedSignature !== null && savedSignature === sig);
+
+  body.innerHTML =
+    '<div class="rlabel">Цена продажи</div>' +
+    '<div class="rbig">' + nf2.format(price) + '\u00A0<small>₽</small></div>' +
+    '<div class="rsub">' + esc(pName) + " / " + esc(fName) + " · " + hhmm(res.printTime) +
+      " печати · маржа " + nf1.format(margin) + " %</div>" +
+    '<div style="margin-top:12px"><table><tbody>' + rows + "</tbody></table></div>" +
+    '<div class="total"><span>ЦЕНА ПРОДАЖИ</span><b>' + money(price) + "</b></div>" +
+    '<div style="margin-top:10px;font-size:12px;color:var(--muted)">Остаток ресурса после печати: ' +
+      '<span class="badge ' + leftCls + '" style="font-size:11px">' + nf1.format(left) + " ч</span></div>" +
+    '<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">' +
+      '<button class="btn ok" id="btnSaveCalc" type="button"' + (already ? " disabled" : "") + ">" +
+        (already ? "✓ Сохранено" : "💾 Сохранить в историю") + "</button>" +
+      '<button class="btn" id="btnPrintCalc" type="button">Печать</button>' +
+    "</div>";
+
+  $("btnSaveCalc").addEventListener("click", saveCalculation);
+  $("btnPrintCalc").addEventListener("click", function(){
+    document.getElementById("panel-calc").classList.add("print-me");
+    window.print();
+    setTimeout(function(){ document.getElementById("panel-calc").classList.remove("print-me"); }, 400);
+  });
+}
+
+function calculate(silent){
+  var issues = [];
+
+  var pName = $("cPrinter").value;
+  var fName = $("cFilament").value;
+
+  var grams    = readF("cGrams", "Вес модели", issues);
+  var delivery = readF("cDelivery", "Доставка", issues);
+  var markup   = readF("cMarkup", "Наценка", issues);
+  var times    = readTimes(issues);
+
+  updateMarginHint(markup);
+
+  lastCalc = null;
+  markField($("cPrinter"), false);
+  markField($("cFilament"), false);
+
+  if (!pName || !data.printers[pName] || !fName || !data.filaments[fName]) {
+    renderResult(null);
+    renderWarnings(issues.length ? issues : ["Добавьте хотя бы один принтер и один филамент."]);
+    if (!silent) toast("Выберите принтер и филамент");
+    scheduleCalcStateSave();
+    return;
+  }
+
+  var untouched = grams <= 0 && delivery <= 0 && times.every(function(t){ return t === 0; });
+  if (untouched) {
+    renderResult(null);
+    renderWarnings(issues);
+    scheduleCalcStateSave();
+    return;
+  }
+
+  var res = calcCost(data.printers[pName], data.filaments[fName], grams, times, delivery, data.settings);
+
+  issues = issues.concat(modelIssues(pName, fName, grams, res.printTime));
+
+  // Сигнатура только по физическим параметрам печати: изменение наценки или
+  // доставки не должно разрешать повторное сохранение и второе списание ресурса.
+  var sig = [pName, fName, grams, times.join(",")].join("|");
+
+  lastCalc = {
+    date: nowStamp(),
+    printer: pName,
+    filament: fName,
+    grams: grams,
+    total_cost: res.total,
+    print_time: res.printTime,
+    markup_pct: markup,
+    price: res.total * (1 + markup / 100),
+    signature: sig
+  };
+
+  renderResult(res, pName, fName, sig, markup);
+  renderWarnings(issues);
+  scheduleCalcStateSave();
+}
+
+function nowStamp(){
+  var d = new Date();
+  function p(n){ return n < 10 ? "0" + n : String(n); }
+  return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) +
+         " " + p(d.getHours()) + ":" + p(d.getMinutes());
+}
+
+function saveCalculation(){
+  if (!lastCalc) return;
+
+  if (savedSignature !== null && savedSignature === lastCalc.signature) {
+    toast("Этот расчёт уже сохранён");
+    return;
+  }
+
+  var btn = $("btnSaveCalc");
+  if (btn) btn.disabled = true;
+
+  var rec = {
+    id: String(Date.now()) + "-" + Math.floor(Math.random() * 10000),
+    date: lastCalc.date,
+    printer: lastCalc.printer,
+    filament: lastCalc.filament,
+    grams: lastCalc.grams,
+    total_cost: lastCalc.total_cost,
+    print_time: lastCalc.print_time,
+    markup_pct: lastCalc.markup_pct,
+    price: lastCalc.price
+  };
+
+  data.history.push(rec);
+  if (data.history.length > MAX_HISTORY) {
+    data.history = data.history.slice(data.history.length - MAX_HISTORY);
+    toast("История достигла " + MAX_HISTORY + " записей — старые удалены");
+  }
+
+  var ok = saveData();
+  savedSignature = lastCalc.signature;
+
+  if (currentTab === "history") renderHistory();
+  if (currentTab === "printers") renderPrinters();
+
+  calculate(true);
+  toast(ok ? "Запись сохранена, остаток ресурса обновлён" : "Запись добавлена, но не сохранена в браузере");
+}
+
+/* ================= ПАМЯТЬ ФОРМЫ ================= */
+
+function scheduleCalcStateSave(){
+  clearTimeout(calcStateTimer);
+  calcStateTimer = setTimeout(saveCalcState, 350);
+}
+
+function saveCalcState(){
+  if (!storageOk) return;
+  try {
+    localStorage.setItem(CALC_KEY, JSON.stringify({
+      printer: $("cPrinter").value,
+      filament: $("cFilament").value,
+      grams: $("cGrams").value,
+      delivery: $("cDelivery").value,
+      markup: $("cMarkup").value,
+      times: [
+        $("tPrintH").value, $("tPrintM").value,
+        $("tModelH").value, $("tModelM").value,
+        $("tPostH").value, $("tPostM").value
+      ]
+    }));
+  } catch (e) { /* игнорируем */ }
+}
+
+function loadCalcState(){
+  var raw = null;
+  try { raw = localStorage.getItem(CALC_KEY); } catch (e) { return; }
+  if (!raw) return;
+  try {
+    var s = JSON.parse(raw);
+    if (!s || typeof s !== "object") return;
+
+    if (s.printer && data.printers[s.printer]) $("cPrinter").value = s.printer;
+    if (s.filament && data.filaments[s.filament]) $("cFilament").value = s.filament;
+
+    if (s.grams != null) $("cGrams").value = String(num(s.grams));
+    if (s.delivery != null) $("cDelivery").value = String(num(s.delivery));
+    if (s.markup != null) $("cMarkup").value = String(num(s.markup));
+
+    var ids = ["tPrintH", "tPrintM", "tModelH", "tModelM", "tPostH", "tPostM"];
+    if (Array.isArray(s.times)) {
+      ids.forEach(function(id, i){
+        if (s.times[i] != null) $(id).value = String(num(s.times[i]));
+      });
+    }
+  } catch (e) { /* игнорируем */ }
+}
+
+/* ================= ИСТОРИЯ ================= */
+
+function renderHistory(){
+  var list = $("historyList");
+  var hist = (data.history || []).slice().sort(function(a, b){
+    return String(b.date).localeCompare(String(a.date));
+  });
+
+  if (!hist.length) {
+    list.innerHTML = '<div class="empty">История пуста. Сохраните расчёт на вкладке «Калькулятор».</div>';
+    $("historySummary").textContent = "Нет записей";
+    return;
+  }
+
+  var sumPrice = 0, sumCost = 0;
+  hist.forEach(function(h){
+    var price = h.price == null ? num(h.total_cost) : num(h.price);
+    sumPrice += price;
+    sumCost += num(h.total_cost);
+  });
+  $("historySummary").textContent = hist.length + " записей · цена " + money(sumPrice) +
+    " · себестоимость " + money(sumCost);
+
+  var html = "";
+  hist.forEach(function(h){
+    var price = h.price == null ? num(h.total_cost) : num(h.price);
+    var markup = num(h.markup_pct);
+    html +=
+      '<div class="item">' +
+        '<div class="item-main">' +
+          '<div class="item-title">' + money(price) +
+            '<span class="badge">' + esc(h.date) + "</span>" +
+            (markup > 0 ? '<span class="badge info">+' + nf1.format(markup) + " %</span>" : "") +
+          "</div>" +
+          '<div class="item-meta">' + esc(h.printer) + " / " + esc(h.filament) +
+            " · " + nf1.format(num(h.grams)) + " г · " + nf1.format(num(h.print_time)) +
+            " ч · себест. " + money(num(h.total_cost)) + "</div>" +
+        "</div>" +
+        '<div class="item-actions">' +
+          '<button class="mini del" type="button" data-delhist="' + esc(h.id) + '" title="Удалить">🗑</button>' +
+        "</div>" +
+      "</div>";
+  });
+  list.innerHTML = html;
+}
+
+function deleteHistory(id){
+  var rec = null;
+  for (var i = 0; i < data.history.length; i++) {
+    if (data.history[i].id === id) { rec = data.history[i]; break; }
+  }
+  if (!rec) return;
+  if (!confirm("Удалить запись от " + rec.date + "?")) return;
+
+  data.history = data.history.filter(function(h){ return h.id !== id; });
+  saveData();
+  renderHistory();
+  toast("Запись удалена, ресурс возвращён");
+}
+
+/* ================= ПРИНТЕРЫ ================= */
+
+var editingPrinter = null;
+
+function findName(obj, name, except){
+  var lower = String(name).toLowerCase();
+  var keys = Object.keys(obj);
+  for (var i = 0; i < keys.length; i++) {
+    if (keys[i] === except) continue;
+    if (keys[i].toLowerCase() === lower) return keys[i];
+  }
+  return null;
+}
+
+function renderPrinters(){
+  var list = $("printerList");
+  var names = Object.keys(data.printers);
+
+  if (!names.length) {
+    list.innerHTML = '<div class="empty">Принтеров нет. Нажмите «+ Добавить».</div>';
+    updateCombos();
+    return;
+  }
+
+  var html = "";
+  names.forEach(function(name){
+    var p = data.printers[name];
+    var init = num(p.initial_resource);
+    var left = init - usedHours(name);
+    var cls = left < 0 ? "neg" : (left < 100 ? "low" : "");
+    var label = left < 0 ? "перерасход " + nf1.format(Math.abs(left)) + " ч" : "остаток " + nf1.format(left) + " ч";
+
+    html +=
+      '<div class="item">' +
+        '<div class="item-main">' +
+          '<div class="item-title">' + esc(name) + ' <span class="badge ' + cls + '">' + label + "</span></div>" +
+          '<div class="item-meta">' + nf1.format(num(p.power)) + " Вт · " + money(num(p.price)) +
+            " · ресурс " + nf1.format(init) + " ч</div>" +
+        "</div>" +
+        '<div class="item-actions">' +
+          '<button class="mini" type="button" data-editp="' + esc(name) + '" title="Изменить">✎</button>' +
+          '<button class="mini del" type="button" data-delp="' + esc(name) + '" title="Удалить">🗑</button>' +
+        "</div>" +
+      "</div>";
+  });
+  list.innerHTML = html;
+  updateCombos();
+}
+
+function openPrinterForm(name){
+  editingPrinter = name || null;
+  var form = $("printerForm");
+  form.classList.remove("hidden");
+
+  if (name && data.printers[name]) {
+    var p = data.printers[name];
+    $("pName").value = name;
+    $("pPower").value = p.power;
+    $("pPrice").value = p.price;
+    $("pRes").value = p.initial_resource;
+  } else {
+    $("pName").value = "";
+    $("pPower").value = 350;
+    $("pPrice").value = 0;
+    $("pRes").value = 3000;
+  }
+  $("pName").focus();
+  form.scrollIntoView({ block: "nearest", behavior: "smooth" });
+}
+
+function closePrinterForm(){
+  editingPrinter = null;
+  $("printerForm").classList.add("hidden");
+}
+
+function savePrinter(){
+  var name = safeKey($("pName").value);
+  if (!name) { toast("Название не может быть пустым"); $("pName").focus(); return; }
+
+  var existing = findName(data.printers, name, editingPrinter);
+  var target = name;
+
+  if (existing) {
+    if (!confirm('Принтер «' + existing + '» уже есть. Заменить его данные?')) return;
+    target = existing;
+  }
+
+  if (editingPrinter && editingPrinter !== target &&
+      data.history.some(function(h){ return h.printer === editingPrinter; })) {
+    toast("Нельзя переименовать принтер, у которого есть заказы в истории");
+    return;
+  }
+
+  if (!editingPrinter && Object.keys(data.printers).length >= MAX_PRINTERS) {
+    toast("Достигнут лимит " + MAX_PRINTERS + " принтеров");
+    return;
+  }
+
+  data.printers[target] = {
+    power: clamp(num($("pPower").value), 0, 100000),
+    price: clamp(num($("pPrice").value), 0, 100000000),
+    initial_resource: clamp(num($("pRes").value), 0, 1000000)
+  };
+  if (editingPrinter && editingPrinter !== target) delete data.printers[editingPrinter];
+
+  saveData();
+  closePrinterForm();
+  renderPrinters();
+  updateCombos();
+  calculate(true);
+  toast("«" + target + "» сохранён");
+}
+
+function deletePrinter(name){
+  if (data.history.some(function(h){ return h.printer === name; })) {
+    toast("Нельзя удалить: в истории есть заказы на «" + name + "»");
+    return;
+  }
+  if (!confirm("Удалить принтер «" + name + "»?")) return;
+  delete data.printers[name];
+  saveData();
+  renderPrinters();
+  updateCombos();
+  calculate(true);
+  toast("Принтер удалён");
+}
+
+/* ================= ФИЛАМЕНТЫ ================= */
+
+var editingFilament = null;
+
+function renderFilaments(){
+  var list = $("filamentList");
+  var names = Object.keys(data.filaments);
+  var q = ($("fFilter") ? $("fFilter").value : "").trim().toLowerCase();
+
+  if (!names.length) {
+    list.innerHTML = '<div class="empty">Филаментов нет. Нажмите «+ Добавить».</div>';
+    if ($("fCount")) $("fCount").textContent = "0";
+    updateCombos();
+    return;
+  }
+
+  var filtered = names.filter(function(n){
+    return !q || n.toLowerCase().indexOf(q) !== -1;
+  });
+
+  if ($("fCount")) $("fCount").textContent = filtered.length + " / " + names.length;
+
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty">Ничего не найдено по запросу «' + esc(q) + '»</div>';
+    updateCombos();
+    return;
+  }
+
+  var groups = {};
+  filtered.forEach(function(n){
+    var c = CATALOG_BY_NAME[n];
+    var g = c ? c.group : "Другие";
+    if (!groups[g]) groups[g] = [];
+    groups[g].push(n);
+  });
+
+  var order = [];
+  GROUP_ORDER.forEach(function(g){ if (groups[g]) order.push(g); });
+  Object.keys(groups).forEach(function(g){ if (order.indexOf(g) === -1) order.push(g); });
+
+  var html = "";
+  order.forEach(function(g){
+    html += '<div class="group-title">' + esc(g) + " <span>" + groups[g].length + "</span></div>";
+    groups[g].forEach(function(name){
+      var f = data.filaments[name];
+      var perGram = num(f.spool_weight) > 0
+        ? num(f.spool_price) / (num(f.spool_weight) * 1000)
+        : 0;
+      var cat = CATALOG_BY_NAME[name];
+      html +=
+        '<div class="item">' +
+          '<div class="item-main">' +
+            '<div class="item-title">' + esc(name) +
+              ' <span class="badge info">сложн. ×' + nf2.format(num(f.complexity)) + "</span>" +
+            "</div>" +
+            '<div class="item-meta">' + money(num(f.spool_price)) + " / " + nf1.format(num(f.spool_weight)) +
+              " кг · " + nf2.format(perGram) + " ₽/г" +
+              (cat && cat.why ? " · " + esc(cat.why) : "") + "</div>" +
+          "</div>" +
+          '<div class="item-actions">' +
+            '<button class="mini" type="button" data-editf="' + esc(name) + '" title="Изменить">✎</button>' +
+            '<button class="mini del" type="button" data-delf="' + esc(name) + '" title="Удалить">🗑</button>' +
+          "</div>" +
+        "</div>";
+    });
+  });
+  list.innerHTML = html;
+  updateCombos();
+}
+
+function openFilamentForm(name){
+  editingFilament = name || null;
+  var form = $("filamentForm");
+  form.classList.remove("hidden");
+
+  if (name && data.filaments[name]) {
+    var f = data.filaments[name];
+    $("fName").value = name;
+    $("fPrice").value = f.spool_price;
+    $("fWeight").value = f.spool_weight;
+    $("fComplexity").value = f.complexity;
+  } else {
+    $("fName").value = "";
+    $("fPrice").value = 1300;
+    $("fWeight").value = 1;
+    $("fComplexity").value = 1.5;
+  }
+  $("fName").focus();
+  form.scrollIntoView({ block: "nearest", behavior: "smooth" });
+}
+
+function closeFilamentForm(){
+  editingFilament = null;
+  $("filamentForm").classList.add("hidden");
+}
+
+function saveFilament(){
+  var name = safeKey($("fName").value);
+  if (!name) { toast("Название не может быть пустым"); $("fName").focus(); return; }
+
+  var complexity = num($("fComplexity").value);
+  if (complexity < 1) {
+    toast("Коэффициент сложности не может быть меньше 1");
+    $("fComplexity").focus();
+    markField($("fComplexity"), true);
+    return;
+  }
+  markField($("fComplexity"), false);
+
+  var existing = findName(data.filaments, name, editingFilament);
+  var target = name;
+
+  if (existing) {
+    if (!confirm('Филамент «' + existing + '» уже есть. Заменить его данные?')) return;
+    target = existing;
+  }
+
+  if (editingFilament && editingFilament !== target &&
+      data.history.some(function(h){ return h.filament === editingFilament; })) {
+    toast("Нельзя переименовать филамент, у которого есть заказы");
+    return;
+  }
+
+  if (!editingFilament && Object.keys(data.filaments).length >= MAX_FILAMENTS) {
+    toast("Достигнут лимит " + MAX_FILAMENTS + " филаментов");
+    return;
+  }
+
+  data.filaments[target] = {
+    spool_price:  clamp(num($("fPrice").value), 0, 100000000),
+    spool_weight: clamp(num($("fWeight").value), 0, 1000),
+    complexity:   clamp(complexity, 1, 100)
+  };
+  if (editingFilament && editingFilament !== target) delete data.filaments[editingFilament];
+
+  saveData();
+  closeFilamentForm();
+  renderFilaments();
+  updateCombos();
+  calculate(true);
+  toast("«" + target + "» сохранён");
+}
+
+function deleteFilament(name){
+  if (data.history.some(function(h){ return h.filament === name; })) {
+    toast("Нельзя удалить: в истории есть заказы с «" + name + "»");
+    return;
+  }
+  if (!confirm("Удалить филамент «" + name + "»?")) return;
+  delete data.filaments[name];
+  saveData();
+  renderFilaments();
+  updateCombos();
+  calculate(true);
+  toast("Филамент удалён");
+}
+
+/* ================= НАСТРОЙКИ ================= */
+
+function fillSettings(){
+  $("sElectricity").value = data.settings.electricity_price;
+  $("sModeling").value    = data.settings.labor_hour_modeling;
+  $("sPrinting").value    = data.settings.labor_hour_printing;
+  $("sPost").value        = data.settings.labor_hour_post;
+  $("sOverhead").value    = data.settings.overhead_coefficient;
+  updateSettingsNote();
+}
+
+function updateSettingsNote(){
+  var note = $("settingsNote");
+  var k = num($("sOverhead").value);
+  if (k > 1) {
+    note.style.display = "";
+    note.textContent = "Похоже, вы ввели проценты. Коэффициент 0.15 — это 15 %, а не 0.15 %.";
+  } else {
+    note.style.display = "none";
+  }
+}
+
+function saveSettings(){
+  var issues = [];
+  var value = readF("sOverhead", "Накладные расходы", issues);
+  if (value > 1 && !confirm("Коэффициент накладных " + nf1.format(value) + " — это " +
+       nf1.format(value * 100) + " %. Продолжить?")) {
+    return;
+  }
+  readF("sElectricity", "Электричество", issues);
+  readF("sModeling", "Моделирование", issues);
+  readF("sPrinting", "Печать (оператор)", issues);
+  readF("sPost", "Постобработка", issues);
+
+  data.settings.electricity_price    = clamp(num($("sElectricity").value), 0, 10000);
+  data.settings.labor_hour_modeling  = clamp(num($("sModeling").value), 0, 1000000);
+  data.settings.labor_hour_printing  = clamp(num($("sPrinting").value), 0, 1000000);
+  data.settings.labor_hour_post      = clamp(num($("sPost").value), 0, 1000000);
+  data.settings.overhead_coefficient = clamp(value, 0, 10);
+
+  saveData();
+  fillSettings();
+  calculate(true);
+  toast(issues.length ? "Сохранено, но проверьте выделенные поля" : "Настройки сохранены");
+}
+
+function renderStorageInfo(){
+  var el = $("storageInfo");
+  var pcs = Object.keys(data.printers).length;
+  var fcs = Object.keys(data.filaments).length;
+  var hc  = data.history.length;
+
+  el.innerHTML =
+    "<p>Данные хранятся в браузере этого устройства (localStorage) и не отправляются в интернет.</p>" +
+    '<p style="margin-top:8px">Принтеров: <b>' + pcs + "</b> · Филаментов: <b>" + fcs +
+    "</b> · Записей в истории: <b>" + hc + "</b></p>" +
+    '<p style="margin-top:8px;color:var(--muted2)">Платформа: <b>' +
+      (PLATFORM === "android" ? "Android" : PLATFORM === "windows" ? "Windows" : "браузер") + "</b></p>" +
+    (storageOk
+      ? '<p style="margin-top:10px;color:#6ee7b7">Хранилище доступно.</p>'
+      : '<p style="margin-top:10px;color:#fca5a5">Хранилище недоступно — данные не сохранятся. Сделайте экспорт в JSON.</p>') +
+    '<p style="margin-top:12px">Для переноса на другое устройство: меню «⋯» → «Экспорт данных».</p>';
+}
+
+/* ================= ЭКСПОРТ / ИМПОРТ ================= */
+
+var PLATFORM = (function(){
+  try {
+    if (window.Capacitor && typeof window.Capacitor.isNativePlatform === "function" &&
+        window.Capacitor.isNativePlatform()) return "android";
+  } catch (e) {}
+  if (window.__TAURI__) return "windows";
+  return "web";
+})();
+
+function showTextFallback(filename, text){
+  var modal = $("textModal");
+  if (!modal) return;
+  $("textModalTitle").textContent = filename + " — скопируйте текст и сохраните в файл";
+  $("textModalBody").value = text;
+  modal.classList.add("open");
+  setTimeout(function(){
+    var ta = $("textModalBody");
+    if (ta) { ta.focus(); ta.select(); }
+  }, 60);
+}
+
+function nativeSave(filename, text){
+  var C = window.Capacitor;
+  if (!C || !C.Plugins || !C.Plugins.Filesystem) return false;
+
+  var FS = C.Plugins.Filesystem;
+  var directory = (FS.Directory && FS.Directory.Cache) || "CACHE";
+  var encoding = (FS.Encoding && FS.Encoding.UTF8) || "utf8";
+
+  FS.writeFile({ path: filename, data: text, directory: directory, encoding: encoding })
+    .then(function(res){
+      if (C.Plugins.Share) {
+        return C.Plugins.Share.share({ title: filename, url: res.uri, dialogTitle: "Сохранить файл" })
+          .then(function(){ toast("Готово — выберите, куда сохранить"); })
+          .catch(function(){ showTextFallback(filename, text); });
+      }
+      showTextFallback(filename, text);
+    })
+    .catch(function(){ showTextFallback(filename, text); });
+
+  return true;
+}
+
+function download(filename, text, mime){
+  if (PLATFORM === "android" && nativeSave(filename, text)) return;
+
+  try {
+    var blob = new Blob([text], { type: mime || "application/json" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 3000);
+  } catch (e) {
+    showTextFallback(filename, text);
+  }
+}
+
+function exportJson(){
+  download(DATA_FILE_NAME, JSON.stringify(data, null, 4), "application/json");
+  toast("Файл данных сохранён");
+}
+
+function csvCell(v){
+  var s = String(v == null ? "" : v);
+  if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+  return '"' + s.replace(/"/g, '""') + '"';
+}
+
+function exportCsv(){
+  if (!data.history.length) { toast("История пуста"); return; }
+
+  var rows = [["Дата", "Принтер", "Филамент", "Вес (г)", "Время (ч)", "Себестоимость", "Наценка %", "Цена"]];
+  data.history.slice()
+    .sort(function(a, b){ return String(a.date).localeCompare(String(b.date)); })
+    .forEach(function(h){
+      var price = h.price == null ? num(h.total_cost) : num(h.price);
+      rows.push([h.date, h.printer, h.filament,
+        String(num(h.grams)), nf2.format(num(h.print_time)),
+        nf2.format(num(h.total_cost)), nf2.format(num(h.markup_pct)), nf2.format(price)]);
+    });
+
+  var csv = "\uFEFF" + rows.map(function(r){ return r.map(csvCell).join(";"); }).join("\r\n");
+  download("3d_calc_history.csv", csv, "text/csv;charset=utf-8");
+  toast("CSV сохранён");
+}
+
+function importJson(){
+  var inp = document.createElement("input");
+  inp.type = "file";
+  inp.accept = ".json,application/json";
+
+  inp.onchange = function(){
+    var file = inp.files && inp.files[0];
+    if (!file) return;
+
+    if (file.size > MAX_IMPORT_BYTES) {
+      toast("Файл больше 5 МБ — импорт отменён");
+      return;
+    }
+
+    var reader = new FileReader();
+    reader.onerror = function(){ toast("Не удалось прочитать файл"); };
+
+    reader.onload = function(){
+      var parsed;
+      try {
+        parsed = JSON.parse(String(reader.result));
+      } catch (e) {
+        toast("Это не JSON или файл повреждён");
+        return;
+      }
+
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+        toast("Неверный формат файла данных");
+        return;
+      }
+      if (!parsed.printers && !parsed.filaments && !parsed.settings && !parsed.history) {
+        toast("В файле нет данных калькулятора");
+        return;
+      }
+
+      var preview = normalize(parsed);
+      var np = Object.keys(preview.printers).length;
+      var nf = Object.keys(preview.filaments).length;
+      var nh = preview.history.length;
+
+      var missingF = 0;
+      CATALOG.forEach(function(c){ if (!preview.filaments[c.name]) missingF++; });
+      var missingP = 0;
+      Object.keys(DEFAULT_DATA.printers).forEach(function(n){ if (!preview.printers[n]) missingP++; });
+
+      if (!np && !nf) {
+        toast("В файле нет ни принтеров, ни филаментов");
+        return;
+      }
+
+      if (!confirm("Импортировать данные?\n\nПринтеров: " + (np + missingP) +
+                   (missingP ? " (+" + missingP + " из стандартных)" : "") +
+                   "\nФиламентов: " + (nf + missingF) +
+                   (missingF ? " (+" + missingF + " из каталога)" : "") +
+                   "\nЗаписей истории: " + nh +
+                   "\n\nТекущие данные будут заменены (старые можно будет восстановить через меню).")) {
+        return;
+      }
+
+      backupData();
+      data = preview;
+      data.meta = {
+        catalog: clamp(preview.meta && preview.meta.catalog, 0, 999),
+        printers: 0
+      };
+      runMigrations(false);
+      savedSignature = null;
+      refreshAll();
+      loadCalcState();
+      calculate(true);
+      toast("Данные импортированы");
+    };
+
+    reader.readAsText(file, "utf-8");
+  };
+
+  inp.click();
+}
+
+function restoreBackup(){
+  if (!hasBackup()) { toast("Резервной копии нет"); return; }
+  if (!confirm("Вернуть данные, которые были до последнего импорта или сброса?")) return;
+
+  try {
+    var parsed = JSON.parse(localStorage.getItem(BACKUP_KEY));
+    data = normalize(parsed);
+    saveData();
+    savedSignature = null;
+    refreshAll();
+    calculate(true);
+    toast("Предыдущие данные восстановлены");
+  } catch (e) {
+    toast("Резервная копия повреждена");
+  }
+}
+
+function resetAll(){
+  if (!confirm("Сбросить все данные к заводским (40 материалов каталога)? История будет удалена.")) return;
+  backupData();
+  data = deepClone(DEFAULT_DATA);
+  saveData();
+  savedSignature = null;
+  refreshAll();
+  calculate(true);
+  toast("Данные сброшены. Отменить можно через меню «⋯»");
+}
+
+/* ================= ИНИЦИАЛИЗАЦИЯ ================= */
+
+function refreshAll(){
+  updateCombos();
+  renderHistory();
+  renderPrinters();
+  renderFilaments();
+  fillSettings();
+  renderStorageInfo();
+  updateMenuState();
+}
+
+function renderCatalogTable(){
+  var tbody = $("catalogTable");
+  if (!tbody) return;
+  tbody.innerHTML = CATALOG.slice().sort(function(a, b){ return a.k - b.k; }).map(function(c){
+    return "<tr><td>" + esc(c.name) + "</td><td>" + nf1.format(c.price) + " ₽/кг</td><td>×" +
+           c.k.toFixed(2) + "</td><td>" + esc(c.why) + "</td></tr>";
+  }).join("");
+}
+
+data = loadData();
+runMigrations(true);
+
+document.querySelectorAll(".tab").forEach(function(btn){
+  btn.addEventListener("click", function(){ setTab(btn.getAttribute("data-tab")); });
+});
+
+["cPrinter", "cFilament"].forEach(function(id){
+  $(id).addEventListener("change", function(){ calculate(true); });
+});
+
+["cGrams", "cDelivery", "cMarkup", "tPrintH", "tPrintM", "tModelH", "tModelM", "tPostH", "tPostM"].forEach(function(id){
+  $(id).addEventListener("input", function(){ calculate(true); });
+  $(id).addEventListener("change", function(){ calculate(true); });
+});
+
+$("fFilter").addEventListener("input", function(){ renderFilaments(); });
+
+document.addEventListener("blur", function(e){
+  if (e.target && e.target.tagName === "INPUT") normalizeField(e.target);
+}, true);
+
+$("btnCalc").addEventListener("click", function(){
+  calculate(false);
+  if (window.innerWidth <= 920) {
+    setTimeout(function(){
+      $("resultCard").scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
+  }
+});
+
+$("historyList").addEventListener("click", function(e){
+  var btn = e.target.closest("[data-delhist]");
+  if (btn) deleteHistory(btn.getAttribute("data-delhist"));
+});
+
+$("btnHistClear").addEventListener("click", function(){
+  if (!data.history.length) { toast("История уже пуста"); return; }
+  if (!confirm("Удалить всю историю? Все списания ресурса будут отменены.")) return;
+  backupData();
+  data.history = [];
+  saveData();
+  renderHistory();
+  toast("История очищена, ресурс восстановлен");
+});
+
+$("btnHistCsv").addEventListener("click", exportCsv);
+
+$("btnAddPrinter").addEventListener("click", function(){ openPrinterForm(null); });
+$("btnCancelPrinter").addEventListener("click", closePrinterForm);
+$("btnSavePrinter").addEventListener("click", savePrinter);
+
+$("printerList").addEventListener("click", function(e){
+  var ed = e.target.closest("[data-editp]");
+  if (ed) { openPrinterForm(ed.getAttribute("data-editp")); return; }
+  var del = e.target.closest("[data-delp]");
+  if (del) deletePrinter(del.getAttribute("data-delp"));
+});
+
+$("btnAddFilament").addEventListener("click", function(){ openFilamentForm(null); });
+$("btnCancelFilament").addEventListener("click", closeFilamentForm);
+$("btnSaveFilament").addEventListener("click", saveFilament);
+
+$("filamentList").addEventListener("click", function(e){
+  var ed = e.target.closest("[data-editf]");
+  if (ed) { openFilamentForm(ed.getAttribute("data-editf")); return; }
+  var del = e.target.closest("[data-delf]");
+  if (del) deleteFilament(del.getAttribute("data-delf"));
+});
+
+$("btnSaveSettings").addEventListener("click", saveSettings);
+$("sOverhead").addEventListener("input", updateSettingsNote);
+
+var menu = $("menu");
+$("btnMenu").addEventListener("click", function(e){
+  e.stopPropagation();
+  menu.classList.toggle("open");
+});
+document.addEventListener("click", function(e){
+  if (!menu.contains(e.target)) menu.classList.remove("open");
+});
+menu.addEventListener("click", function(e){
+  var btn = e.target.closest("[data-act]");
+  if (!btn) return;
+  var act = btn.getAttribute("data-act");
+  menu.classList.remove("open");
+  if (act === "export-json") exportJson();
+  if (act === "import-json") importJson();
+  if (act === "export-csv") exportCsv();
+  if (act === "restore-backup") restoreBackup();
+  if (act === "reset") resetAll();
+});
+
+document.addEventListener("keydown", function(e){
+  if (e.key === "Enter" && e.target && (e.target.tagName === "INPUT" || e.target.tagName === "SELECT")) {
+    if (e.target.closest("#printerForm")) { e.preventDefault(); savePrinter(); }
+    else if (e.target.closest("#filamentForm")) { e.preventDefault(); saveFilament(); }
+    else e.target.blur();
+  }
+  if (e.key === "Escape") {
+    closePrinterForm();
+    closeFilamentForm();
+    menu.classList.remove("open");
+    var tm = $("textModal");
+    if (tm) tm.classList.remove("open");
+  }
+});
+
+$("btnCloseText").addEventListener("click", function(){
+  $("textModal").classList.remove("open");
+});
+$("btnCopyText").addEventListener("click", function(){
+  var ta = $("textModalBody");
+  ta.focus(); ta.select();
+  var ok = false;
+  try { ok = document.execCommand("copy"); } catch (e) {}
+  if (ok) { toast("Скопировано в буфер"); return; }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(ta.value).then(
+      function(){ toast("Скопировано в буфер"); },
+      function(){ toast("Не удалось скопировать — выделите текст вручную"); }
+    );
+  } else {
+    toast("Не удалось скопировать — выделите текст вручную");
+  }
+});
+$("textModal").addEventListener("click", function(e){
+  if (e.target === this) this.classList.remove("open");
+});
+
+refreshAll();
+loadCalcState();
+calculate(true);
+renderCatalogTable();
+
+/* Открытый API для проверки и отладки из консоли */
+window.TitoCalc = {
+  version: APP_VERSION,
+  calcCost: calcCost,
+  normalize: normalize,
+  csvCell: csvCell,
+  usedHours: usedHours,
+  catalog: CATALOG,
+  getData: function(){ return data; },
+  setData: function(d){ data = normalize(d); saveData(); refreshAll(); calculate(true); }
+};
+})();
+</script>
+</body>
+</html>

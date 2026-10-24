@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0d10">
+<meta name="description" content="Калькулятор себестоимости и цены 3D-печати">
+<title>Калькулятор стоимости 3D-печати</title>
+<style>
+  *{box-sizing:border-box}
+  :root{
+    --bg:#0b0d10; --panel:#12151a; --panel2:#171b22; --panel3:#1d222a;
+    --line:#252b34; --txt:#e7ebf0; --muted:#8d97a6;
+    --accent:#2dd4bf; --accent2:#fbbf24; --danger:#f87171;
+    --radius:14px;
+  }
+  html,body{margin:0}
+  body{
+    background:
+      radial-gradient(1100px 560px at 85% -12%, #132a2b 0%, transparent 62%),
+      radial-gradient(800px 400px at 0% 0%, #182231 0%, transparent 55%),
+      var(--bg);
+    color:var(--txt);
+    font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    -webkit-text-size-adjust:100%;
+    min-height:100vh;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:22px 16px 120px}
+
+  header.top{display:flex;align-items:center;gap:14px;margin-bottom:20px;flex-wrap:wrap}
+  .logo{width:40px;height:40px;border-radius:12px;flex:0 0 auto;
+    background:linear-gradient(145deg,#2dd4bf,#0e7490);display:grid;place-items:center;
+    box-shadow:0 8px 24px rgba(45,212,191,.22)}
+  .logo svg{width:22px;height:22px;display:block}
+  h1{font-size:19px;margin:0;letter-spacing:.2px}
+  .sub{color:var(--muted);font-size:12.5px;margin-top:2px}
+
+  .grid{display:grid;grid-template-columns:minmax(0,1fr) 384px;gap:18px;align-items:start}
+
+  .card{
+    background:linear-gradient(180deg,rgba(255,255,255,.018),rgba(255,255,255,0)) , var(--panel);
+    border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:14px;
+  }
+  .card h2{font-size:13px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);
+    margin:0 0 12px;font-weight:600;display:flex;align-items:center;gap:8px}
+  .card h2::before{content:"";width:3px;height:13px;border-radius:2px;background:var(--accent);opacity:.9}
+
+  .fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .field{min-width:0}
+  .field.full{grid-column:1/-1}
+  .field label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:6px;line-height:1.3}
+  .ctl{
+    display:flex;align-items:center;background:var(--panel2);border:1px solid var(--line);
+    border-radius:10px;transition:border-color .15s,background .15s;overflow:hidden;
+  }
+  .ctl:focus-within{border-color:var(--accent);background:var(--panel3)}
+  .ctl input,.ctl select{
+    flex:1 1 auto;min-width:0;width:100%;background:transparent;border:0;outline:none;
+    color:var(--txt);font:inherit;font-size:16px;padding:10px 12px;appearance:none;
+  }
+  .ctl select{padding-right:30px;cursor:pointer;
+    background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+    background-position:calc(100% - 17px) 19px,calc(100% - 12px) 19px;
+    background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+  .ctl select option{background:#171b22;color:var(--txt)}
+  .ctl .u{flex:0 0 auto;color:var(--muted);font-size:13px;padding-right:12px;white-space:nowrap}
+  input[type=number]{-moz-appearance:textfield}
+  input[type=number]::-webkit-outer-spin-button,
+  input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+
+  .hint{font-size:11.5px;color:#6f7887;margin-top:5px;line-height:1.35}
+
+  /* right column */
+  .side{position:sticky;top:16px}
+  .result{
+    background:linear-gradient(160deg,#16302f 0%,#121a1f 55%,#12151a 100%);
+    border-color:#2a4644;
+  }
+  .rlabel{font-size:12px;letter-spacing:.8px;text-transform:uppercase;color:#8fd8cf;margin-bottom:4px}
+  .rbig{font-size:38px;font-weight:700;letter-spacing:-.8px;line-height:1.1}
+  .rbig small{font-size:16px;font-weight:500;color:var(--muted);letter-spacing:0}
+  .rsub{color:var(--muted);font-size:12.5px;margin-top:5px}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+  .stats>div{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);
+    border-radius:10px;padding:9px 11px}
+  .stats span{display:block;font-size:11px;color:var(--muted);margin-bottom:2px}
+  .stats b{font-size:15px;font-weight:600}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  td{padding:6px 0;border-bottom:1px dashed rgba(255,255,255,.055);vertical-align:top}
+  tr:last-child td{border-bottom:0}
+  td:last-child{text-align:right;white-space:nowrap;padding-left:12px;font-variant-numeric:tabular-nums}
+  .rn{color:var(--txt)}
+  .rp{display:block;font-size:11px;color:#6f7887;margin-top:1px}
+
+  .total{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px solid var(--line);
+    font-size:13.5px;margin-top:4px}
+  .total span{color:var(--muted)}
+  .total b{font-variant-numeric:tabular-nums}
+  .total.big b{color:var(--accent);font-size:16px}
+
+  .metrics{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .metrics div{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+  .metrics span{display:block;font-size:11px;color:var(--muted);margin-bottom:2px}
+  .metrics b{font-size:13.5px;font-weight:600}
+
+  .actions{display:flex;gap:8px;flex-wrap:wrap}
+  button{
+    font:inherit;font-size:13.5px;padding:10px 14px;border-radius:10px;cursor:pointer;
+    background:var(--panel2);color:var(--txt);border:1px solid var(--line);
+    transition:background .15s,border-color .15s,transform .05s;
+  }
+  button:hover{background:var(--panel3);border-color:#39424f}
+  button:active{transform:translateY(1px)}
+  button.primary{background:linear-gradient(145deg,#2dd4bf,#12a594);border-color:#2dd4bf;color:#04211f;font-weight:600}
+  button.primary:hover{filter:brightness(1.07)}
+  button.ghost{background:transparent}
+  .foot{color:#5f6875;font-size:11.5px;text-align:center;margin-top:18px;line-height:1.6}
+
+  /* mobile summary bar */
+  .mbar{
+    display:none;position:fixed;left:0;right:0;bottom:0;z-index:50;
+    background:rgba(15,18,22,.94);backdrop-filter:blur(12px);
+    border-top:1px solid var(--line);
+    padding:9px 14px calc(9px + env(safe-area-inset-bottom));
+    gap:8px;
+  }
+  .mbar div{flex:1;min-width:0;text-align:center}
+  .mbar span{display:block;font-size:10.5px;color:var(--muted);margin-bottom:1px}
+  .mbar b{font-size:13.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
+
+  @media (max-width:900px){
+    .grid{grid-template-columns:minmax(0,1fr)}
+    .side{position:static;order:2}
+    .inputs{order:1}
+    .mbar{display:flex}
+    .rbig{font-size:33px}
+  }
+  @media (max-width:520px){
+    .fields{grid-template-columns:1fr 1fr}
+    .wrap{padding:16px 12px 120px}
+    .rbig{font-size:30px}
+  }
+  @media print{
+    body{background:#fff;color:#000}
+    .mbar,.actions,.hint,header.top .logo{display:none!important}
+    .card{background:#fff;border:1px solid #ccc;break-inside:avoid}
+    .result{background:#fff;border-color:#999}
+    .grid{grid-template-columns:1fr 1fr}
+    .side{position:static}
+    .rlabel,.sub,.muted,td:last-child .rp,.metrics span,.total span{color:#555}
+    .rbig,.total.big b{color:#000}
+    .stats>div,.metrics div{background:#f4f4f4;border-color:#ddd}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="logo" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#04211f" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2 21 7v10l-9 5-9-5V7z"/><path d="M3 7l9 5 9-5"/><path d="M12 12v10"/>
+      </svg>
+    </div>
+    <div>
+      <h1>Калькулятор стоимости 3D-печати</h1>
+      <div class="sub">Себестоимость, цена и прибыль одной детали или партии</div>
+    </div>
+  </header>
+
+  <div class="grid">
+    <div class="inputs">
+
+      <section class="card">
+        <h2>Печать</h2>
+        <div class="fields">
+          <div class="field">
+            <label for="qty">Деталей в печати, шт</label>
+            <div class="ctl"><input id="qty" type="number" inputmode="numeric" step="1" min="1" value="1"><span class="u">шт</span></div>
+          </div>
+          <div class="field">
+            <label for="weight">Масса материала, г</label>
+            <div class="ctl"><input id="weight" type="number" inputmode="decimal" step="any" min="0" value="50"><span class="u">г</span></div>
+            <div class="hint">Вес модели + поддержки + брайм</div>
+          </div>
+          <div class="field">
+            <label for="hours">Время печати, ч</label>
+            <div class="ctl"><input id="hours" type="number" inputmode="decimal" step="any" min="0" value="4"><span class="u">ч</span></div>
+          </div>
+          <div class="field">
+            <label for="minutes">…и минут</label>
+            <div class="ctl"><input id="minutes" type="number" inputmode="decimal" step="any" min="0" max="59" value="0"><span class="u">мин</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Материал</h2>
+        <div class="fields">
+          <div class="field full">
+            <label for="material">Тип материала</label>
+            <div class="ctl">
+              <select id="material">
+                <option value="1300">PLA — 1300 ₽/кг</option>
+                <option value="1500">PLA+ / Pro — 1500 ₽/кг</option>
+                <option value="1600">PETG — 1600 ₽/кг</option>
+                <option value="1400">ABS — 1400 ₽/кг</option>
+                <option value="1900">ASA — 1900 ₽/кг</option>
+                <option value="3200">TPU / FLEX — 3200 ₽/кг</option>
+                <option value="3000">PC (поликарбонат) — 3000 ₽/кг</option>
+                <option value="3500">Nylon / PA-CF — 3500 ₽/кг</option>
+                <option value="4500">Смола стандарт — 4500 ₽/кг</option>
+                <option value="7000">Смола инженерная — 7000 ₽/кг</option>
+                <option value="-1">Своя цена…</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="priceKg">Цена материала, ₽/кг</label>
+            <div class="ctl"><input id="priceKg" type="number" inputmode="decimal" step="any" min="0" value="1300"><span class="u">₽/кг</span></div>
+          </div>
+          <div class="field">
+            <label for="wastePct">Отходы / угар катушки, %</label>
+            <div class="ctl"><input id="wastePct" type="number" inputmode="decimal" step="any" min="0" value="5"><span class="u">%</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Оборудование и электричество</h2>
+        <div class="fields">
+          <div class="field">
+            <label for="powerW">Мощность принтера, Вт</label>
+            <div class="ctl"><input id="powerW" type="number" inputmode="decimal" step="any" min="0" value="120"><span class="u">Вт</span></div>
+            <div class="hint">Средняя за печать: 80–150 Вт</div>
+          </div>
+          <div class="field">
+            <label for="tariff">Тариф, ₽/кВт·ч</label>
+            <div class="ctl"><input id="tariff" type="number" inputmode="decimal" step="any" min="0" value="5.5"><span class="u">₽</span></div>
+          </div>
+          <div class="field">
+            <label for="printerCost">Стоимость принтера, ₽</label>
+            <div class="ctl"><input id="printerCost" type="number" inputmode="decimal" step="any" min="0" value="35000"><span class="u">₽</span></div>
+          </div>
+          <div class="field">
+            <label for="printerLifeH">Ресурс принтера, ч</label>
+            <div class="ctl"><input id="printerLifeH" type="number" inputmode="decimal" step="any" min="1" value="5000"><span class="u">ч</span></div>
+            <div class="hint">Амортизация в час = цена / ресурс</div>
+          </div>
+          <div class="field">
+            <label for="maintRubH">Обслуживание, ₽/ч</label>
+            <div class="ctl"><input id="maintRubH" type="number" inputmode="decimal" step="any" min="0" value="2"><span class="u">₽/ч</span></div>
+            <div class="hint">Сопла, ПТФЭ, смазка, ремни</div>
+          </div>
+          <div class="field">
+            <label for="consumables">Расходники на печать, ₽</label>
+            <div class="ctl"><input id="consumables" type="number" inputmode="decimal" step="any" min="0" value="10"><span class="u">₽</span></div>
+            <div class="hint">Клей, спирт, перчатки, салфетки</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Труд</h2>
+        <div class="fields">
+          <div class="field">
+            <label for="laborMin">Подготовка + обработка 1 детали, мин</label>
+            <div class="ctl"><input id="laborMin" type="number" inputmode="decimal" step="any" min="0" value="15"><span class="u">мин</span></div>
+          </div>
+          <div class="field">
+            <label for="laborRate">Стоимость часа работы, ₽</label>
+            <div class="ctl"><input id="laborRate" type="number" inputmode="decimal" step="any" min="0" value="600"><span class="u">₽/ч</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Риски, наценка и продажа</h2>
+        <div class="fields">
+          <div class="field">
+            <label for="failPct">Брак / неудачные печати, %</label>
+            <div class="ctl"><input id="failPct" type="number" inputmode="decimal" step="any" min="0" value="5"><span class="u">%</span></div>
+            <div class="hint">Закладывается на все прямые затраты</div>
+          </div>
+          <div class="field">
+            <label for="packaging">Упаковка, ₽</label>
+            <div class="ctl"><input id="packaging" type="number" inputmode="decimal" step="any" min="0" value="15"><span class="u">₽</span></div>
+          </div>
+          <div class="field">
+            <label for="markupPct">Наценка, %</label>
+            <div class="ctl"><input id="markupPct" type="number" inputmode="decimal" step="any" min="0" value="40"><span class="u">%</span></div>
+          </div>
+          <div class="field">
+            <label for="commissionPct">Комиссия площадки, %</label>
+            <div class="ctl"><input id="commissionPct" type="number" inputmode="decimal" step="any" min="0" max="90" value="0"><span class="u">%</span></div>
+            <div class="hint">Авито / Ozon / Etsy и т.п.</div>
+          </div>
+          <div class="field">
+            <label for="taxPct">Налог с выручки, %</label>
+            <div class="ctl"><input id="taxPct" type="number" inputmode="decimal" step="any" min="0" max="90" value="0"><span class="u">%</span></div>
+            <div class="hint">НПД 4–6%, УСН 6% и т.д.</div>
+          </div>
+          <div class="field">
+            <label for="roundTo">Округление цены</label>
+            <div class="ctl">
+              <select id="roundTo">
+                <option value="1">до 1 ₽</option>
+                <option value="10" selected>до 10 ₽</option>
+                <option value="50">до 50 ₽</option>
+                <option value="100">до 100 ₽</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <aside class="side">
+      <section class="card result">
+        <div class="rlabel">Цена за деталь</div>
+        <div class="rbig" id="priceUnit">—</div>
+        <div class="rsub" id="priceNote">—</div>
+        <div class="stats">
+          <div><span>Себестоимость / шт</span><b id="costUnit">—</b></div>
+          <div><span>Прибыль / шт</span><b id="profitUnit">—</b></div>
+          <div><span>Маржа</span><b id="marginVal">—</b></div>
+          <div><span>Факт. наценка</span><b id="markupReal">—</b></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Структура себестоимости</h2>
+        <table><tbody id="breakdown"></tbody></table>
+        <div class="total"><span>Себестоимость партии</span><b id="costBatch">—</b></div>
+        <div class="total"><span>Выручка за партию</span><b id="revenue">—</b></div>
+        <div class="total big"><span>Чистая прибыль</span><b id="netProfit">—</b></div>
+      </section>
+
+      <section class="card">
+        <h2>Показатели</h2>
+        <div class="metrics" id="metrics"></div>
+      </section>
+
+      <div class="actions">
+        <button class="primary" id="btnCopy" type="button">Скопировать расчёт</button>
+        <button id="btnPrint" type="button">Печать / PDF</button>
+        <button class="ghost" id="btnReset" type="button">Сбросить</button>
+      </div>
+    </aside>
+  </div>
+
+  <div class="foot">
+    Расчёт носит оценочный характер · данные сохраняются в этом браузере · работает без интернета
+  </div>
+</div>
+
+<div class="mbar" id="mbar">
+  <div><span>Себест.</span><b id="mCost">—</b></div>
+  <div><span>Цена</span><b id="mPrice" style="color:var(--accent)">—</b></div>
+  <div><span>Прибыль</span><b id="mProfit">—</b></div>
+</div>
+
+<noscript><p style="text-align:center;color:#f87171">Для работы калькулятора нужен включённый JavaScript.</p></noscript>
+
+<script>
+(function(){
+  "use strict";
+
+  var KEY = "pcc_v1";
+  var nf0 = new Intl.NumberFormat("ru-RU", {maximumFractionDigits:0});
+  var nf1 = new Intl.NumberFormat("ru-RU", {minimumFractionDigits:0, maximumFractionDigits:1});
+  var nf2 = new Intl.NumberFormat("ru-RU", {minimumFractionDigits:0, maximumFractionDigits:2});
+
+  function $(id){ return document.getElementById(id); }
+
+  function read(id){
+    var el = $(id);
+    if(!el) return 0;
+    var v = String(el.value).replace(/\s|\u00A0/g,"").replace(",",".");
+    var n = parseFloat(v);
+    return isFinite(n) ? n : 0;
+  }
+
+  function rub(v){
+    if(!isFinite(v)) v = 0;
+    var a = Math.abs(v);
+    var s = a >= 100 ? nf0.format(v) : nf2.format(v);
+    return s + "\u00A0₽";
+  }
+  function rubAvg(v){ return nf2.format(v) + "\u00A0₽"; }
+  function pct(v){ return nf1.format(v) + "\u00A0%"; }
+  function hrs(h){
+    var hh = Math.floor(h);
+    var mm = Math.round((h - hh) * 60);
+    if(mm === 60){ hh += 1; mm = 0; }
+    return hh + "\u00A0ч" + (mm ? " " + mm + "\u00A0мин" : "");
+  }
+
+  function money(v, cls, hint){
+    var p = hint ? '<span class="rp">' + hint + '</span>' : "";
+    return '<tr><td class="rn">' + cls + p + '</td><td>' + rubAvg(v) + '</td></tr>';
+  }
+
+  function compute(){
+    var qty = Math.max(1, Math.round(read("qty")) || 1);
+    var minutes = read("minutes");
+    var hours = Math.max(0, read("hours")) + Math.max(0, minutes) / 60;
+
+    var weight  = Math.max(0, read("weight"));
+    var priceKg = Math.max(0, read("priceKg"));
+    var waste   = Math.max(0, read("wastePct")) / 100;
+
+    var powerW  = Math.max(0, read("powerW"));
+    var tariff  = Math.max(0, read("tariff"));
+
+    var printerCost = Math.max(0, read("printerCost"));
+    var lifeH   = Math.max(1, read("printerLifeH"));
+    var maintH  = Math.max(0, read("maintRubH"));
+
+    var laborMin = Math.max(0, read("laborMin"));
+    var rate     = Math.max(0, read("laborRate"));
+
+    var consumables = Math.max(0, read("consumables"));
+    var packaging   = Math.max(0, read("packaging"));
+
+    var fail   = Math.min(90, Math.max(0, read("failPct"))) / 100;
+    var markup = Math.max(0, read("markupPct")) / 100;
+    var comm   = Math.min(0.9, Math.max(0, read("commissionPct"))) / 100;
+    var taxP   = Math.min(0.9, Math.max(0, read("taxPct"))) / 100;
+    var roundTo = Math.max(1, read("roundTo") || 1);
+
+    var material = weight / 1000 * priceKg * (1 + waste);
+    var power    = powerW / 1000 * hours * tariff;
+    var deprec   = printerCost / lifeH * hours;
+    var maint    = maintH * hours;
+    var labor    = laborMin / 60 * rate * qty;
+
+    var direct = material + power + deprec + maint + labor + consumables + packaging;
+    var risk   = direct * fail;
+    var costBatch = direct + risk;
+    var costUnit  = costBatch / qty;
+
+    var profit  = costBatch * markup;
+    var pre     = costBatch + profit;
+    var denom   = Math.max(0.05, 1 - comm - taxP);
+    var priceBatchRaw = pre / denom;
+    var priceUnit = Math.ceil((priceBatchRaw / qty) / roundTo) * roundTo;
+    if(!isFinite(priceUnit) || priceUnit <= 0) priceUnit = roundTo;
+
+    var revenue    = priceUnit * qty;
+    var commission = revenue * comm;
+    var taxSum     = revenue * taxP;
+    var net        = revenue - costBatch - commission - taxSum;
+    var netUnit    = net / qty;
+    var margin     = revenue > 0 ? net / revenue * 100 : 0;
+    var markupReal = costBatch > 0 ? net / costBatch * 100 : 0;
+
+    // --- вывод
+    $("priceUnit").innerHTML = nf0.format(priceUnit) + '\u00A0<small>₽ / шт</small>';
+    $("priceNote").textContent = qty > 1
+      ? "Партия из " + qty + " шт — " + rub(revenue) + " · " + hrs(hours) + " печати"
+      : hrs(hours) + " печати · " + nf1.format(weight) + " г материала";
+
+    $("costUnit").textContent = rubAvg(costUnit);
+    $("profitUnit").textContent = rubAvg(netUnit);
+    $("marginVal").textContent = pct(margin);
+    $("markupReal").textContent = pct(markupReal);
+
+    var rows = "";
+    rows += money(material, "Материал", nf1.format(weight) + " г × " + rubAvg(priceKg) + "/кг" + (waste > 0 ? " +" + nf0.format(waste*100) + "% отходов" : ""));
+    rows += money(power, "Электричество", nf0.format(powerW) + " Вт × " + hrs(hours) + " × " + rubAvg(tariff));
+    rows += money(deprec, "Амортизация принтера", "ресурс " + nf0.format(lifeH) + " ч");
+    rows += money(maint, "Обслуживание", rubAvg(maintH) + "/ч");
+    rows += money(labor, "Труд", nf1.format(laborMin) + " мин × " + nf0.format(qty) + " шт");
+    rows += money(consumables, "Расходники", "");
+    rows += money(packaging, "Упаковка", "");
+    if(risk > 0) rows += money(risk, "Риск брака", nf0.format(fail*100) + "% от прямых затрат");
+    $("breakdown").innerHTML = rows;
+
+    $("costBatch").textContent = rubAvg(costBatch);
+    $("revenue").textContent = rub(revenue);
+    $("netProfit").textContent = rub(net);
+
+    var metrics = [
+      ["Время печати", hrs(hours)],
+      ["Масса материала", nf1.format(weight) + "\u00A0г"],
+      ["Материал, ₽/г", rubAvg(weight > 0 ? material / weight : 0)],
+      ["Себестоимость часа", rubAvg(hours > 0 ? costBatch / hours : 0)],
+      ["Комиссия площадки", rubAvg(commission)],
+      ["Налог", rubAvg(taxSum)]
+    ];
+    $("metrics").innerHTML = metrics.map(function(m){
+      return '<div><span>' + m[0] + '</span><b>' + m[1] + '</b></div>';
+    }).join("");
+
+    var mBar = $("mCost"); if(mBar) mBar.textContent = rubAvg(costUnit);
+    var mPrice = $("mPrice"); if(mPrice) mPrice.textContent = nf0.format(priceUnit) + "\u00A0₽";
+    var mProfit = $("mProfit"); if(mProfit) mProfit.textContent = rubAvg(netUnit);
+
+    return {
+      qty: qty, hours: hours, weight: weight, costBatch: costBatch, costUnit: costUnit,
+      priceUnit: priceUnit, revenue: revenue, net: net, netUnit: netUnit,
+      margin: margin, material: material, power: power, deprec: deprec, maint: maint,
+      labor: labor, consumables: consumables, packaging: packaging, risk: risk,
+      commission: commission, tax: taxSum, fail: fail, markup: markup
+    };
+  }
+
+  // ---------- сохранение ----------
+  function allFields(){
+    return Array.prototype.slice.call(document.querySelectorAll("input[id], select[id]"));
+  }
+
+  function save(){
+    var data = {};
+    allFields().forEach(function(el){ data[el.id] = el.value; });
+    try{ localStorage.setItem(KEY, JSON.stringify(data)); }catch(e){}
+  }
+
+  function load(){
+    var raw = null;
+    try{ raw = localStorage.getItem(KEY); }catch(e){}
+    if(!raw) return;
+    try{
+      var data = JSON.parse(raw);
+      Object.keys(data).forEach(function(k){
+        var el = document.getElementById(k);
+        if(el) el.value = data[k];
+      });
+    }catch(e){}
+  }
+
+  // ---------- события ----------
+  allFields().forEach(function(el){
+    el.addEventListener("input", function(){ compute(); save(); });
+    el.addEventListener("change", function(){ compute(); save(); });
+  });
+
+  $("material").addEventListener("change", function(){
+    var v = this.value;
+    if(v === "-1"){
+      $("priceKg").focus();
+      $("priceKg").select();
+    }else{
+      $("priceKg").value = v;
+    }
+    compute(); save();
+  });
+
+  $("priceKg").addEventListener("input", function(){
+    var sel = $("material");
+    if(sel.value !== "-1" && String(sel.value) !== this.value) sel.value = "-1";
+  });
+
+  $("btnReset").addEventListener("click", function(){
+    if(!confirm("Сбросить все значения к настройкам по умолчанию?")) return;
+    try{ localStorage.removeItem(KEY); }catch(e){}
+    location.reload();
+  });
+
+  $("btnPrint").addEventListener("click", function(){ window.print(); });
+
+  function summaryText(r){
+    var L = [];
+    L.push("РАСЧЁТ 3D-ПЕЧАТИ");
+    L.push("Деталей: " + r.qty + " шт · время: " + hrs(r.hours) + " · масса: " + nf1.format(r.weight) + " г");
+    L.push("");
+    L.push("Материал:        " + rubAvg(r.material));
+    L.push("Электричество:   " + rubAvg(r.power));
+    L.push("Амортизация:     " + rubAvg(r.deprec));
+    L.push("Обслуживание:    " + rubAvg(r.maint));
+    L.push("Труд:            " + rubAvg(r.labor));
+    L.push("Расходники:      " + rubAvg(r.consumables));
+    L.push("Упаковка:        " + rubAvg(r.packaging));
+    L.push("Риск брака:      " + rubAvg(r.risk));
+    L.push("---");
+    L.push("Себестоимость партии: " + rubAvg(r.costBatch));
+    L.push("Себестоимость 1 шт:   " + rubAvg(r.costUnit));
+    L.push("Цена 1 шт:            " + nf0.format(r.priceUnit) + " ₽");
+    L.push("Выручка:              " + rubAvg(r.revenue));
+    L.push("Чистая прибыль:       " + rubAvg(r.net) + " (" + pct(r.margin) + " маржа)");
+    return L.join("\n");
+  }
+
+  $("btnCopy").addEventListener("click", function(){
+    var btn = this;
+    var text = summaryText(compute());
+    function done(ok){
+      var old = btn.textContent;
+      btn.textContent = ok ? "Скопировано ✓" : "Не удалось";
+      setTimeout(function(){ btn.textContent = old; }, 1400);
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){ done(true); }, function(){ fallback(); });
+    }else{
+      fallback();
+    }
+    function fallback(){
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = false;
+      try{ ok = document.execCommand("copy"); }catch(e){}
+      document.body.removeChild(ta);
+      done(ok);
+    }
+  });
+
+  // Enter в поле — убрать фокус (на Android скрывает клавиатуру)
+  document.addEventListener("keydown", function(e){
+    if(e.key === "Enter" && e.target && e.target.tagName === "INPUT") e.target.blur();
+  });
+
+  load();
+  compute();
+})();
+</script>
+</body>
+</html>
