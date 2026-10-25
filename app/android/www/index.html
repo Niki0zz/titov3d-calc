@@ -238,7 +238,7 @@
     </div>
     <div class="brand">
       <h1>TitoV3D Calc</h1>
-      <div class="v">калькулятор себестоимости и цены печати · v6.0</div>
+      <div class="v">калькулятор себестоимости и цены печати · v6.1</div>
     </div>
     <div class="spacer"></div>
     <button class="iconbtn" id="btnMenu" title="Данные и экспорт" aria-label="Меню">⋯</button>
@@ -586,7 +586,7 @@
 
 /* ================= КОНСТАНТЫ ================= */
 
-var APP_VERSION = "6.0";
+var APP_VERSION = "6.1";
 var STORE_KEY   = "tito_v3d_calc_v2";
 var BACKUP_KEY  = "tito_v3d_calc_backup";
 var CALC_KEY    = "tito_v3d_calc_form";
@@ -741,6 +741,29 @@ function toast(msg){
 
 /* ================= ХРАНЕНИЕ ================= */
 
+/* --- нативное хранилище (Tauri): общий JSON с MCP-сервером --- */
+var NATIVE_FS = !!(window.__TAURI__ && window.__TAURI__.core &&
+                   typeof window.__TAURI__.core.invoke === "function");
+var nativeWriteTimer = null;
+var nativePath = "";
+
+function nativeInvoke(cmd, args){
+  if (!NATIVE_FS) return Promise.resolve(null);
+  try {
+    return window.__TAURI__.core.invoke(cmd, args || {}).catch(function(){ return null; });
+  } catch (e) {
+    return Promise.resolve(null);
+  }
+}
+
+function nativeWriteSoon(){
+  if (!NATIVE_FS) return;
+  clearTimeout(nativeWriteTimer);
+  nativeWriteTimer = setTimeout(function(){
+    nativeInvoke("write_data", { text: JSON.stringify(data, null, 2) });
+  }, 400);
+}
+
 var storageOk = true;
 var data = null;
 
@@ -831,6 +854,7 @@ function loadData(){
 }
 
 function saveData(){
+  nativeWriteSoon();
   if (!storageOk) return false;
   try {
     localStorage.setItem(STORE_KEY, JSON.stringify(data));
@@ -1816,11 +1840,17 @@ function renderStorageInfo(){
   var hc  = data.history.length;
 
   el.innerHTML =
-    "<p>Данные хранятся в браузере этого устройства (localStorage) и не отправляются в интернет.</p>" +
+    "<p>" + (NATIVE_FS
+      ? "Данные хранятся в файле приложения и дублируются в localStorage. Файл общий с MCP-сервером."
+      : "Данные хранятся в браузере этого устройства (localStorage) и не отправляются в интернет.") + "</p>" +
     '<p style="margin-top:8px">Принтеров: <b>' + pcs + "</b> · Филаментов: <b>" + fcs +
     "</b> · Записей в истории: <b>" + hc + "</b></p>" +
     '<p style="margin-top:8px;color:var(--muted2)">Платформа: <b>' +
       (PLATFORM === "android" ? "Android" : PLATFORM === "windows" ? "Windows" : "браузер") + "</b></p>" +
+    (NATIVE_FS
+      ? '<p style="margin-top:8px;color:var(--muted2)">Синхронизация с файлом: <b style="color:#6ee7b7">включена</b></p>' +
+        (nativePath ? '<p style="margin-top:4px;color:var(--muted2);overflow-wrap:anywhere">Файл: ' + esc(nativePath) + "</p>" : "")
+      : "") +
     (storageOk
       ? '<p style="margin-top:10px;color:#6ee7b7">Хранилище доступно.</p>'
       : '<p style="margin-top:10px;color:#fca5a5">Хранилище недоступно — данные не сохранятся. Сделайте экспорт в JSON.</p>') +
@@ -2048,7 +2078,6 @@ function renderCatalogTable(){
 }
 
 data = loadData();
-runMigrations(true);
 
 document.querySelectorAll(".tab").forEach(function(btn){
   btn.addEventListener("click", function(){ setTab(btn.getAttribute("data-tab")); });
@@ -2177,10 +2206,30 @@ $("textModal").addEventListener("click", function(e){
   if (e.target === this) this.classList.remove("open");
 });
 
-refreshAll();
-loadCalcState();
-calculate(true);
-renderCatalogTable();
+/* Загрузка: в настольной версии файл важнее localStorage */
+async function boot(){
+  if (NATIVE_FS) {
+    var p = await nativeInvoke("data_file");
+    if (p) nativePath = p;
+
+    var raw = await nativeInvoke("read_data");
+    if (raw) {
+      try {
+        data = normalize(JSON.parse(raw));
+      } catch (e) { /* остаёмся на localStorage */ }
+    }
+  }
+
+  runMigrations(true);
+  refreshAll();
+  loadCalcState();
+  calculate(true);
+  renderCatalogTable();
+
+  if (NATIVE_FS) nativeWriteSoon();
+}
+
+boot();
 
 /* Открытый API для проверки и отладки из консоли */
 window.TitoCalc = {

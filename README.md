@@ -10,7 +10,7 @@
   <img src="docs/screenshots/mobile.png" alt="Мобильная версия" width="260">
 </p>
 
-**Версия 6.0.0** · Windows `.exe` / `.msi` / установщик NSIS · Android `versionCode 600`, `minSdk 24` (Android 7.0+)
+**Версия 6.1.0** · Windows `.exe` / `.msi` / установщик NSIS · Android `versionCode 610`, `minSdk 24` (Android 7.0+)
 
 🌐 **Демо в браузере:** https://niki0zz.github.io/titov3d-calc/
 
@@ -70,7 +70,7 @@ Creality_K1C (350 Вт, 45 000 ₽, ресурс 3000 ч) · PLA (1300 ₽/кг,
 
 **Браузер / Windows.** Открыть `app/web/index.html` двойным кликом или через `Открыть калькулятор.bat`. Установка, Python и права администратора не нужны.
 
-**Android.** Скачать `releases/TitoV3D-Calc-6.0.0-android.apk` и установить (разрешить установку из неизвестных источников). Альтернатива без установки — открыть `index.html` в Chrome и выбрать «Добавить на главный экран».
+**Android.** Скачать `releases/TitoV3D-Calc-6.1.0-android.apk` и установить (разрешить установку из неизвестных источников). Если появляется «пакет недействителен» — сверить размер и SHA-256 по [`docs/INSTALL.md`](docs/INSTALL.md). Альтернатива без установки — открыть `index.html` в Chrome и выбрать «Добавить на главный экран».
 
 **Сборка из исходников.** Инструкции с зависимостями и командами — в [`docs/BUILD.md`](docs/BUILD.md).
 
@@ -78,15 +78,15 @@ Creality_K1C (350 Вт, 45 000 ₽, ресурс 3000 ч) · PLA (1300 ₽/кг,
 
 | Файл | Назначение | Размер |
 |---|---|---|
-| `TitoV3D-Calc-6.0.0-x64-setup.exe` | Установщик Windows (NSIS) | 1.3 МБ |
-| `TitoV3D-Calc-6.0.0-x64.msi` | MSI-пакет для развёртывания | 2.0 МБ |
-| `TitoV3D-Calc-6.0.0-portable.exe` | Портативный бинарник, без установки | 4.2 МБ |
-| `TitoV3D-Calc-6.0.0-android.apk` | Подписанный APK для Android 7+ | 3.1 МБ |
+| `TitoV3D-Calc-6.1.0-x64-setup.exe` | Установщик Windows (NSIS) | 1.3 МБ |
+| `TitoV3D-Calc-6.1.0-x64.msi` | MSI-пакет для развёртывания | 2.0 МБ |
+| `TitoV3D-Calc-6.1.0-portable.exe` | Портативный бинарник, без установки | 4.2 МБ |
+| `TitoV3D-Calc-6.1.0-android.apk` | Подписанный APK (v2 + v3), Android 7+ | 3.2 МБ |
 
 Контрольные суммы — [`releases/SHA256SUMS.txt`](releases/SHA256SUMS.txt).
 
 ```powershell
-Get-FileHash .\TitoV3D-Calc-6.0.0-x64-setup.exe -Algorithm SHA256
+Get-FileHash .\TitoV3D-Calc-6.1.0-x64-setup.exe -Algorithm SHA256
 ```
 
 ## Структура репозитория
@@ -94,7 +94,7 @@ Get-FileHash .\TitoV3D-Calc-6.0.0-x64-setup.exe -Algorithm SHA256
 ```
 .
 ├── app/
-│   ├── web/            # веб-версия 6.0 — весь калькулятор в одном index.html
+│   ├── web/            # веб-версия 6.1 — весь калькулятор в одном index.html
 │   ├── legacy-web/     # первая веб-версия (4.x), сохранена для истории
 │   ├── desktop/        # обёртка Tauri 2 + Rust для Windows (src-tauri, без target/)
 │   └── android/        # Capacitor-проект: www/, android/, конфиги
@@ -105,6 +105,8 @@ Get-FileHash .\TitoV3D-Calc-6.0.0-x64-setup.exe -Algorithm SHA256
 │   ├── PORTING.md      # план переноса на Windows и Android
 │   ├── BUILD.md        # сборка: Rust, Tauri, Android SDK, подпись APK
 │   ├── REPORT.md       # отчёт о тестировании
+│   ├── INSTALL.md      # установка APK и разбор ошибок установки
+│   ├── MCP.md          # MCP-сервер для работы с калькулятором из агента
 │   └── screenshots/    # скриншоты интерфейса
 ├── releases/           # собранные артефакты + SHA256SUMS.txt
 └── README.md
@@ -117,6 +119,8 @@ Get-FileHash .\TitoV3D-Calc-6.0.0-x64-setup.exe -Algorithm SHA256
 - [План переноса](docs/PORTING.md) — Windows (Tauri) и Android (Capacitor)
 - [Сборка](docs/BUILD.md) — от установки Rust/Android SDK до подписи APK
 - [Отчёт о тестах](docs/REPORT.md) — проверенные сценарии и результаты
+- [Установка APK](docs/INSTALL.md) — сверка хеша и разбор «пакет недействителен»
+- [MCP-сервер](docs/MCP.md) — управление калькулятором из агента
 
 ## Защита и устойчивость
 

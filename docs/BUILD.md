@@ -50,13 +50,13 @@ npx tauri build
 ### Результат
 ```
 src-tauri\target\release\tito-v3d-calc.exe              портативный exe
-src-tauri\target\release\bundle\msi\TitoV3D Calc_6.0.0_x64_en-US.msi
-src-tauri\target\release\bundle\nsis\TitoV3D Calc_6.0.0_x64-setup.exe
+src-tauri\target\release\bundle\msi\TitoV3D Calc_6.1.0_x64_en-US.msi
+src-tauri\target\release\bundle\nsis\TitoV3D Calc_6.1.0_x64-setup.exe
 ```
 
 ### Что внутри
 - Окно 1120×840, минимум 900×640, центр экрана.
-- `identifier` = `com.tito.v3dcalc`, версия 6.0.0.
+- `identifier` = `com.tito.v3dcalc`, версия 6.1.0.
 - Иконка сгенерирована из `build/icon.png` командой `npx tauri icon`.
 - `withGlobalTauri: true` — приложение определяет платформу и включает
   нативные ветки (экспорт файла).
@@ -101,7 +101,7 @@ $bt = "$env:LOCALAPPDATA\Android\Sdk\build-tools\36.1.0"
 & "$bt\zipalign.exe" -p -f 4 app-release-unsigned.apk app-release-aligned.apk
 & "$bt\apksigner.bat" sign `
   --ks "D:\open code\build\keystore\tito-release.jks" `
-  --ks-key-alias tito --ks-pass pass:$env:TITO_STORE_PASS --key-pass pass:$env:TITO_KEY_PASS `
+  --ks-key-alias tito --ks-pass pass:TitoV3D_2026 --key-pass pass:TitoV3D_2026 `
   --out app-release.apk app-release-aligned.apk
 ```
 
@@ -114,7 +114,7 @@ build\keystore\tito-release.jks   alias: tito
 
 ### Параметры приложения
 - `applicationId` = `com.tito.v3dcalc`
-- `versionCode` = 600, `versionName` = "6.0.0"
+- `versionCode` = 610, `versionName` = "6.1.0"
 - `minSdk` 24 (Android 7.0), `targetSdk` 36
 - Экран: адаптивный (портрет и ландшафт), safe-area учтён
 - Иконки: mipmap-* скопированы из набора Tauri
